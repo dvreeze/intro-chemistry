@@ -41,7 +41,7 @@ lazy val commonSettings = Seq(
 
   libraryDependencies += "com.lihaoyi" %%% "fastparse" % "2.1.3",
 
-  libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.8" % "test"
+  libraryDependencies += "org.scalatest" %%% "scalatest" % "3.1.0-SNAP13" % "test"
 )
 
 lazy val root = project.in(file("."))

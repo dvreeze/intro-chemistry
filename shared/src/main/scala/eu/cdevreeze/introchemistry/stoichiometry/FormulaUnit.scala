@@ -19,10 +19,10 @@ package eu.cdevreeze.introchemistry.stoichiometry
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
- * A formula unit as used in stoichiometry. No charge is expressed in the formula unit.
+ * A formula unit as used in stoichiometry. A formula unit may have a positive or negative charge.
  *
- * Example formula units as strings (format returned by method "show" and parsed by method "parse"):
- * "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O".
+ * Example (neutral) formula units as strings (format returned by method "show" and parsed by method "parse"):
+ * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula unit: "ion(SO4, -2)".
  *
  * Note that a formula unit is not the same as a molecule. See for example https://geometryofmolecules.com/formula-unit-vs-molecule/
  * and https://www.wisegeek.com/what-is-a-formula-unit.htm. See also
@@ -30,19 +30,33 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  *
  * @author Chris de Vreeze
  */
-final case class FormulaUnit(partCounts: Seq[FormulaUnit.PartQuantity]) {
-  require(partCounts.nonEmpty, s"Missing 'parts' in formula unit $this")
+sealed trait FormulaUnit {
 
-  def isElement: Boolean = {
-    partCounts == 1 && partCounts.head.part.isElement
-  }
+  def isElement: Boolean
 
-  def isCompound: Boolean = !isElement
+  def isCompound: Boolean
 
   /**
    * Returns the atom counts per element. This is important to determine the mass of the formula unit.
    * It is also important to determine the elements, if the quantities are ignored.
    */
+  def atomCounts: Map[ElementSymbol, Int]
+
+  def charge: Int
+
+  /**
+   * Returns the string representation from which the same formula unit can be parsed.
+   */
+  def show: String
+}
+
+final case class NeutralFormulaUnit(partCounts: Seq[FormulaUnit.PartQuantity]) extends FormulaUnit {
+  require(partCounts.nonEmpty, s"Missing 'parts' in formula unit $this")
+
+  def isElement: Boolean = atomCounts.keySet.sizeIs == 1
+
+  def isCompound: Boolean = !isElement
+
   def atomCounts: Map[ElementSymbol, Int] = {
     partCounts.foldLeft(Map.empty[ElementSymbol, Int]) { case (accAtomCounts, partQuantity) =>
       val updatedAtomCounts: Map[ElementSymbol, Int] =
@@ -55,7 +69,21 @@ final case class FormulaUnit(partCounts: Seq[FormulaUnit.PartQuantity]) {
     }
   }
 
-  def show: String = partCounts.mkString
+  def charge: Int = 0
+
+  def show: String = partCounts.map(_.show).mkString
+}
+
+final case class IonicFormulaUnit(neutralFormulaUnit: NeutralFormulaUnit, charge: Int) extends FormulaUnit {
+  require(charge != 0, s"The charge must not be 0")
+
+  def isElement: Boolean = neutralFormulaUnit.isElement
+
+  def isCompound: Boolean = neutralFormulaUnit.isCompound
+
+  def atomCounts: Map[ElementSymbol, Int] = neutralFormulaUnit.atomCounts
+
+  def show: String = s"ion(${neutralFormulaUnit.show}, $charge)"
 }
 
 object FormulaUnit {
@@ -80,13 +108,13 @@ object FormulaUnit {
     def show: String = elementSymbol.toString
   }
 
-  final case class CompoundPart(formulaUnit: FormulaUnit) extends Part {
+  final case class CompoundPart(formulaUnit: NeutralFormulaUnit) extends Part {
 
     def isElement: Boolean = formulaUnit.isElement
 
     def atomCounts: Map[ElementSymbol, Int] = formulaUnit.atomCounts
 
-    def show: String = s"($formulaUnit)"
+    def show: String = s"(${formulaUnit.show})"
   }
 
   // A part with its quantity in a formula unit. I do not know if there is an official name for this.
@@ -100,7 +128,7 @@ object FormulaUnit {
 
     def show: String = {
       val showedCount: String = if (count == 1) "" else count.toString
-      s"$part$showedCount"
+      s"${part.show}$showedCount"
     }
   }
 
@@ -123,18 +151,44 @@ object FormulaUnit {
       }
     }
 
-    def formulaUnit[_: P]: P[FormulaUnit] = P( partQuantity.rep(1) ).map(partQuantities => FormulaUnit(partQuantities))
+    def formulaUnit[_: P]: P[FormulaUnit] = P(neutralFormulaUnit | ionicFormulaUnit)
 
-    def partQuantity[_: P]: P[PartQuantity] = P( part ~ count.? ).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
+    def neutralFormulaUnit[_: P]: P[NeutralFormulaUnit] =
+      P(partQuantity.rep(1)).map(partQuantities => NeutralFormulaUnit(partQuantities))
 
-    def part[_: P]: P[Part] = P( elementPart | compoundPart )
+    def ionicFormulaUnit[_: P]: P[IonicFormulaUnit] =
+      P("ion" ~ "(" ~ neutralFormulaUnit ~ "," ~ " ".rep(0) ~ charge ~ ")")
+        .map { case (fu, charge) => IonicFormulaUnit(fu, charge) }
 
-    def elementPart[_: P]: P[ElementPart] = P( elementSymbol ).map(el => ElementPart(el))
+    def partQuantity[_: P]: P[PartQuantity] = P(part ~ count.?).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
 
-    def compoundPart[_: P]: P[CompoundPart] = P( "(" ~ formulaUnit ~ ")" ).map(fu => CompoundPart(fu))
+    def part[_: P]: P[Part] = P(elementPart | compoundPart)
 
-    def count[_: P]: P[Int] = P( CharIn("0-9").rep(1).! ).map(_.toInt)
+    def elementPart[_: P]: P[ElementPart] = P(elementSymbol).map(el => ElementPart(el))
 
-    def elementSymbol[_: P]: P[ElementSymbol] = P( (CharIn("A-Z") ~ CharIn("a-z").rep(0)).! ).map(s => ElementSymbol.parse(s))
+    def compoundPart[_: P]: P[CompoundPart] = P("(" ~ neutralFormulaUnit ~ ")").map(fu => CompoundPart(fu))
+
+    def charge[_: P]: P[Int] =
+      P(("+" | "-").!.? ~ count).map { case (optSign, n) => if (optSign.contains("-")) -n else n }.filter(_ != 0)
+
+    def count[_: P]: P[Int] = P(CharIn("0-9").rep(1).!).map(_.toInt).filter(_ != 0)
+
+    def elementSymbol[_: P]: P[ElementSymbol] = P((CharIn("A-Z") ~ CharIn("a-z").rep(0)).!).map(s => ElementSymbol.parse(s))
   }
+
+  // Some well-know ionic formula units
+
+  val Hydroxide = FormulaUnit("ion(OH, -1)")
+  val Carbonate = FormulaUnit("ion(CO3, -2)")
+  val Bicarbonate = FormulaUnit("ion(HCO3, -1)")
+  val Nitrate = FormulaUnit("ion(NO3, -1)")
+  val Nitrite = FormulaUnit("ion(NO2, -1)")
+  val Sulfate = FormulaUnit("ion(SO4, -2)")
+  val Sulfite = FormulaUnit("ion(SO3, -2)")
+  val Phosphate = FormulaUnit("ion(PO4, -3)")
+  val Cyanide = FormulaUnit("ion(CN, -1)")
+  val Acetate = FormulaUnit("ion(C2H3O2, -1)")
+  val Hydronium = FormulaUnit("ion(H3O, +1)")
+  val Ammonium = FormulaUnit("ion(NH4, +1)")
+
 }

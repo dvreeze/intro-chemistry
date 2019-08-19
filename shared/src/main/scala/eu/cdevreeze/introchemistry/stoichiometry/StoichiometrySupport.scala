@@ -39,7 +39,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 
   /**
    * Returns `massInAmu(formulaUnit)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
-   * of a Mole (Avogadro's number as quantity): grams per mole of the formula unit equals the atomic weight (amu) of the formula unit.
+   * of a Mole (Avogadro's number as quantity): grams per mole of the formula unit equals the atomic mass (amu) of the formula unit.
    */
   def massInGramPerMole(formulaUnit: FormulaUnit): BigDecimal = {
     massInAmu(formulaUnit)
@@ -56,7 +56,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 
   /**
    * Returns `massOfAtomInAmu(elementSymbol)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
-   * of a Mole (Avogadro's number as quantity): grams per mole of the atom equals the atomic weight (amu) of the atom.
+   * of a Mole (Avogadro's number as quantity): grams per mole of the atom equals the atomic mass (amu) of the atom.
    */
   def massOfAtomInGramPerMole(elementSymbol: ElementSymbol): BigDecimal = {
     massOfAtomInAmu(elementSymbol)
@@ -66,7 +66,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 object StoichiometrySupport {
 
   /**
-   * Avogadro's number, which as quanity makes up a mole, like the number 12 makes up a dozen and like number 2 makes up a pair.
+   * Avogadro's number, which as quantity is a mole, like the number 12 is a dozen and the number 2 is a pair.
    */
   val AvogadrosNumber: BigDecimal = BigDecimal(6.02214076E23)
 }

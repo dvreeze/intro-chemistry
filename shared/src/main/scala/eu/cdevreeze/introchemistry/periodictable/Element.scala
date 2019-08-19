@@ -21,10 +21,10 @@ package eu.cdevreeze.introchemistry.periodictable
  *
  * @author Chris de Vreeze
  */
-final class Element(
-  val symbol: ElementSymbol,
-  val name: String,
-  val atomicMass: BigDecimal
+final case class Element(
+  symbol: ElementSymbol,
+  name: String,
+  atomicMass: BigDecimal
 ) {
 
   def symbolName: String = symbol.symbolName
@@ -34,13 +34,6 @@ final class Element(
   def chemicalGroup: ChemicalGroupBlock = symbol.chemicalGroup
 
   override def toString: String = {
-    Map("symbol" -> symbol, "name" -> name, "atomicMass" -> atomicMass).mkString("[", ", ", "]")
-  }
-}
-
-object Element {
-
-  def apply(symbol: ElementSymbol, name: String, atomicMass: BigDecimal): Element = {
-    new Element(symbol, name, atomicMass)
+    (0 to productArity).map(idx => s"${productElementName(idx) -> productElement(idx)}").mkString("[ ", ", ",  " ]")
   }
 }
