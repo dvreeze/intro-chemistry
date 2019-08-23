@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.internal
 
+import scala.util.chaining._
+
 import org.scalatest.funsuite.AnyFunSuite
 
 /**
@@ -32,14 +34,18 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(3), BigDecimal(-2), BigDecimal(4))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
+
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveExactlyOneSolution(eliminationResult)
+    }
 
     val expectedResult = Matrix(Seq(
       Seq(BigDecimal(1), BigDecimal(0), BigDecimal(2)),
       Seq(BigDecimal(0), BigDecimal(1), BigDecimal(1))
     ))
 
-    assertResult(Some(expectedResult)) {
+    assertResult(expectedResult) {
       eliminationResult
     }
   }
@@ -51,7 +57,11 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(4), BigDecimal(-7), BigDecimal(1), BigDecimal(-1))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
+
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveExactlyOneSolution(eliminationResult)
+    }
 
     val expectedResult = Matrix(Seq(
       Seq(BigDecimal(1), BigDecimal(0), BigDecimal(0), BigDecimal(3)),
@@ -59,7 +69,7 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(0), BigDecimal(0), BigDecimal(1), BigDecimal(1))
     ))
 
-    assertResult(Some(expectedResult)) {
+    assertResult(expectedResult) {
       eliminationResult
     }
   }
@@ -71,7 +81,11 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(0), BigDecimal(3), BigDecimal(-2), BigDecimal(-5))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
+
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveExactlyOneSolution(eliminationResult)
+    }
 
     val expectedResult = Matrix(Seq(
       Seq(BigDecimal(1), BigDecimal(0), BigDecimal(0), BigDecimal(-2)),
@@ -79,7 +93,7 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(0), BigDecimal(0), BigDecimal(1), BigDecimal(4))
     ))
 
-    assertResult(Some(expectedResult)) {
+    assertResult(expectedResult) {
       eliminationResult
     }
   }
@@ -91,16 +105,22 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(4), BigDecimal(2), BigDecimal(1), BigDecimal(2))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult =
+      GaussianElimination.computeGaussJordanEchelonForm(matrix)
+        .pipe(m => m.map(n => BigDecimal(n.toInt)))
+
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveExactlyOneSolution(eliminationResult)
+    }
 
     val expectedResult = Matrix(Seq(
       Seq(BigDecimal(1), BigDecimal(0), BigDecimal(0), BigDecimal(-5)),
       Seq(BigDecimal(0), BigDecimal(1), BigDecimal(0), BigDecimal(10)),
       Seq(BigDecimal(0), BigDecimal(0), BigDecimal(1), BigDecimal(2))
-    ))
+    )).pipe(m => m.map(n => BigDecimal(n.toInt)))
 
-    assertResult(Some(expectedResult.map(n => BigDecimal(n.toInt)))) {
-      eliminationResult.map(m => m.map(n => BigDecimal(n.toInt)))
+    assertResult(expectedResult) {
+      eliminationResult
     }
   }
 
@@ -111,10 +131,10 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(3), BigDecimal(2), BigDecimal(-4), BigDecimal(7))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
-    assertResult(None) {
-      eliminationResult
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveNoSolutions(eliminationResult)
     }
   }
 
@@ -125,10 +145,10 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(3), BigDecimal(2), BigDecimal(-4), BigDecimal(6))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
-    assertResult(None) {
-      eliminationResult
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveInfinitelyManySolutions(eliminationResult)
     }
   }
 
@@ -139,14 +159,13 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(5), BigDecimal(-2), BigDecimal(0), BigDecimal(-3), BigDecimal(5))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
-    assertResult(None) {
-      eliminationResult
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveInfinitelyManySolutions(eliminationResult)
     }
   }
 
-  /*
   test("testGaussianElimination-for-simple-3-by-4-matrix-4") {
     // See https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_Chemistry_-_The_Central_Science_(Brown_et_al.)/03._Stoichiometry%3A_Calculations_with_Chemical_Formulas_and_Equations/3.1%3A_Chemical_Equations
     val matrix = Matrix(Seq(
@@ -156,18 +175,10 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(1), BigDecimal(3), BigDecimal(2), BigDecimal(-6), BigDecimal(0))
     ))
 
-    val eliminationResult = GaussianElimination.findGaussJordanEchelonForm(matrix)
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
-    val expectedResult = Matrix(Seq(
-      Seq(BigDecimal(1), BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(1)),
-      Seq(BigDecimal(0), BigDecimal(1), BigDecimal(0), BigDecimal(0), BigDecimal(7)),
-      Seq(BigDecimal(0), BigDecimal(0), BigDecimal(1), BigDecimal(0), BigDecimal(4)),
-      Seq(BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(1), BigDecimal(5))
-    ))
-
-    assertResult(Some(expectedResult)) {
-      eliminationResult
+    assertResult(true) {
+      GaussianElimination.isFoundToHaveInfinitelyManySolutions(eliminationResult)
     }
   }
-  */
 }
