@@ -37,10 +37,13 @@ sealed trait FormulaUnit {
   def isCompound: Boolean
 
   /**
-   * Returns the atom counts per element. This is important to determine the mass of the formula unit.
-   * It is also important to determine the elements, if the quantities are ignored.
+   * Returns the atom counts per element. This is also important to determine the mass of the formula unit.
    */
   def atomCounts: Map[ElementSymbol, Int]
+
+  final def elementSymbols: Set[ElementSymbol] = atomCounts.keySet
+
+  final def atomCount(elementSymbol: ElementSymbol): Int = atomCounts.getOrElse(elementSymbol, 0)
 
   def charge: Int
 
@@ -157,7 +160,7 @@ object FormulaUnit {
       P(partQuantity.rep(1)).map(partQuantities => NeutralFormulaUnit(partQuantities))
 
     def ionicFormulaUnit[_: P]: P[IonicFormulaUnit] =
-      P("ion" ~ "(" ~ neutralFormulaUnit ~ "," ~ " ".rep(0) ~ charge ~ ")")
+      P("ion" ~ "(" ~/ neutralFormulaUnit ~ "," ~ " ".rep(0) ~ charge ~ ")")
         .map { case (fu, charge) => IonicFormulaUnit(fu, charge) }
 
     def partQuantity[_: P]: P[PartQuantity] = P(part ~ count.?).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
@@ -171,7 +174,7 @@ object FormulaUnit {
     def charge[_: P]: P[Int] =
       P(("+" | "-").!.? ~ count).map { case (optSign, n) => if (optSign.contains("-")) -n else n }.filter(_ != 0)
 
-    def count[_: P]: P[Int] = P(CharIn("0-9").rep(1).!).map(_.toInt).filter(_ != 0)
+    def count[_: P]: P[Int] = P(CharIn("0-9").rep(1).!).map(_.toInt).filter(_ > 0)
 
     def elementSymbol[_: P]: P[ElementSymbol] = P((CharIn("A-Z") ~ CharIn("a-z").rep(0)).!).map(s => ElementSymbol.parse(s))
   }
