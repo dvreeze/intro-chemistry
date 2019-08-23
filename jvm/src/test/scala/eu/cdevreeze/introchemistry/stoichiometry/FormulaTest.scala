@@ -180,6 +180,69 @@ class FormulaTest extends AnyFunSuite {
     }
   }
 
+  test("testParseOtherSimpleIonicFormula") {
+    val formulaAsString = "1 CuCl2 --> 1 ion(Cu, 2) + 2 ion(Cl, -1)"
+    val formula = Formula(formulaAsString)
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CuCl2"), 1))) {
+      formula.reactants
+    }
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Cu, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(Cl, -1)"), 2))) {
+      formula.products
+    }
+
+    assertResult(true) {
+      formula.isBalanced
+    }
+
+    assertResult(formulaAsString) {
+      formula.show
+    }
+  }
+
+  test("testParseYetAnotherSimpleIonicFormula") {
+    val formulaAsString = "1 CuSO4 --> 1 ion(Cu, 2) + 1 ion(SO4, -2)"
+    val formula = Formula(formulaAsString)
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CuSO4"), 1))) {
+      formula.reactants
+    }
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Cu, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(SO4, -2)"), 1))) {
+      formula.products
+    }
+
+    assertResult(true) {
+      formula.isBalanced
+    }
+
+    assertResult(formulaAsString) {
+      formula.show
+    }
+  }
+
+  test("testParseRelativelySimpleIonicFormula") {
+    val formulaAsString = "1 Ba(C2H3O2)2 --> 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)"
+    val formula = Formula(formulaAsString)
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Ba(C2H3O2)2"), 1))) {
+      formula.reactants
+    }
+
+    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Ba, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(C2H3O2, -1)"), 2))) {
+      formula.products
+    }
+
+    assertResult(true) {
+      formula.isBalanced
+    }
+
+    assertResult(formulaAsString) {
+      formula.show
+    }
+  }
+
   test("testParseComplexFormula") {
     val formulaAsString = "1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O --> 5 Ca(H2PO4)2H2O"
     val formula = Formula(formulaAsString)
