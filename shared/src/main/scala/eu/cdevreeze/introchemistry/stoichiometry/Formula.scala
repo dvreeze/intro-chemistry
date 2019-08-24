@@ -53,6 +53,14 @@ final case class Formula(reactants: Seq[Formula.FormulaUnitQuantity], products: 
     leftHandCount == rightHandCount
   }
 
+  def multiplyCoefficients(factor: Int): Formula = {
+    require(factor > 0, s"Expected factor > 0")
+
+    Formula(
+      reactants.map(fuq => fuq.copy(quantity = factor * fuq.quantity)),
+      products.map(fuq => fuq.copy(quantity = factor * fuq.quantity)))
+  }
+
   /**
    * Returns the string representation from which the same formula can be parsed.
    */
@@ -104,5 +112,30 @@ object Formula {
 
     def count[_: P]: P[Int] = P(CharIn("0-9").rep(1).!).map(_.toInt).filter(_ > 0)
   }
+
+  // Builder
+
+  final case class Builder(reactants: Seq[Formula.FormulaUnitQuantity], products: Seq[Formula.FormulaUnitQuantity]) {
+
+    def build: Formula = Formula(reactants, products)
+
+    def plusReactant(quantity: Int, formulaUnit: FormulaUnit): Builder = {
+      Builder(reactants.appended(FormulaUnitQuantity(formulaUnit, quantity)), products)
+    }
+
+    def plusReactant(quantity: Int, formulaUnitString: String): Builder = {
+      plusReactant(quantity, FormulaUnit(formulaUnitString))
+    }
+
+    def plusProduct(quantity: Int, formulaUnit: FormulaUnit): Builder = {
+      Builder(reactants, products.appended(FormulaUnitQuantity(formulaUnit, quantity)))
+    }
+
+    def plusProduct(quantity: Int, formulaUnitString: String): Builder = {
+      plusProduct(quantity, FormulaUnit(formulaUnitString))
+    }
+  }
+
+  def builder: Builder = new Builder(Seq.empty, Seq.empty)
 
 }

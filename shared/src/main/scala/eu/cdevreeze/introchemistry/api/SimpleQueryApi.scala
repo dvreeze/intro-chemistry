@@ -14,30 +14,55 @@
  * limitations under the License.
  */
 
-package eu.cdevreeze.introchemistry.stoichiometry
+package eu.cdevreeze.introchemistry.api
 
 import eu.cdevreeze.introchemistry.periodictable.Element
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
+import eu.cdevreeze.introchemistry.periodictable.OxidationStates
 import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
+import eu.cdevreeze.introchemistry.stoichiometry.FormulaUnit
+import eu.cdevreeze.introchemistry.stoichiometry.StoichiometrySupport
 
 /**
- * Stoichiometry support, given a periodic table. In perticular, determining the mass of a molecule and conversions between
- * mass and moles are supported. The atom counts in a molecule can be queried directly on the FormulaUnit. Balancing
- * chemical equations is supported by the GaussianElimination and Formula types.
- *
+ * Simple chemistry query API, combining the different APIs into one "entry point".
  *
  * @author Chris de Vreeze
  */
-final class StoichiometrySupport(val periodicTable: PeriodicTable) {
+final class SimpleQueryApi(val periodicTable: PeriodicTable) {
+
+  // PeriodicTable queries
+
+  def getElement(elementSymbol: ElementSymbol): Element = {
+    periodicTable.getElement(elementSymbol)
+  }
+
+  def getElementByAtomicNumber(atomicNumber: Int): Element = {
+    periodicTable.getElementByAtomicNumber(atomicNumber)
+  }
+
+  def getElementByName(name: String): Element = {
+    periodicTable.getElementByName(name)
+  }
+
+  // OxidationStates queries
+
+  /**
+   * Tries to find the probable or mandatory oxidation state of an element in a compound (not in an element itself because
+   * then the oxidation state is 0).
+   */
+  def findProbableOxidationNumber(elementSymbol: ElementSymbol): Option[Int] = {
+    OxidationStates.findProbableOxidationNumber(elementSymbol)
+  }
+
+  // StoichiometrySupport
+
+  def avocadrosNumber: BigDecimal = StoichiometrySupport.AvogadrosNumber
 
   /**
    * The mass of a formula unit in atomic mass units (or Daltons).
    */
   def massInAmu(formulaUnit: FormulaUnit): BigDecimal = {
-    formulaUnit.atomCounts.map { case (elementSymbol: ElementSymbol, atomCount: Int) =>
-      val atomMassOfAtom: BigDecimal = massOfAtomInAmu(elementSymbol)
-      atomMassOfAtom * atomCount
-    }.sum
+    StoichiometrySupport(periodicTable).massInAmu(formulaUnit)
   }
 
   /**
@@ -45,16 +70,14 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
    * of a Mole (Avogadro's number as quantity): grams per mole of the formula unit equals the atomic mass (amu) of the formula unit.
    */
   def massInGramPerMole(formulaUnit: FormulaUnit): BigDecimal = {
-    massInAmu(formulaUnit)
+    StoichiometrySupport(periodicTable).massInGramPerMole(formulaUnit)
   }
 
   /**
    * The mass of an atom in atomic mass units (or Daltons).
    */
   def massOfAtomInAmu(elementSymbol: ElementSymbol): BigDecimal = {
-    val element: Element = periodicTable.getElement(elementSymbol)
-    val atomMass: BigDecimal = element.atomicMass
-    atomMass
+    StoichiometrySupport(periodicTable).massOfAtomInAmu(elementSymbol)
   }
 
   /**
@@ -62,16 +85,6 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
    * of a Mole (Avogadro's number as quantity): grams per mole of the atom equals the atomic mass (amu) of the atom.
    */
   def massOfAtomInGramPerMole(elementSymbol: ElementSymbol): BigDecimal = {
-    massOfAtomInAmu(elementSymbol)
+    StoichiometrySupport(periodicTable).massOfAtomInGramPerMole(elementSymbol)
   }
-}
-
-object StoichiometrySupport {
-
-  /**
-   * Avogadro's number, which as quantity is a mole, like the number 12 is a dozen and the number 2 is a pair.
-   */
-  val AvogadrosNumber: BigDecimal = BigDecimal(6.02214076E23)
-
-  def apply(periodicTable: PeriodicTable): StoichiometrySupport = new StoichiometrySupport(periodicTable)
 }

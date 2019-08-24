@@ -5,14 +5,15 @@
 
 import $ivy.`eu.cdevreeze.introchemistry::introchemistry:0.1.0-SNAPSHOT`
 
-import eu.cdevreeze.introchemistry.periodictable.jvm._, eu.cdevreeze.introchemistry.periodictable._, eu.cdevreeze.introchemistry.stoichiometry._, eu.cdevreeze.introchemistry.internal._
+import eu.cdevreeze.introchemistry.periodictable.jvm._, eu.cdevreeze.introchemistry.periodictable._, eu.cdevreeze.introchemistry.stoichiometry._
+import eu.cdevreeze.introchemistry.internal._, eu.cdevreeze.introchemistry.api._
 
 val periodicTable = PeriodicTableLoader.newInstance().loadPeriodicTable()
 
-val stoichiometrySupport = new StoichiometrySupport(periodicTable)
+val queryApi = new SimpleQueryApi(periodicTable)
 
-import stoichiometrySupport._
+import queryApi._
 import ElementSymbol._
 
-// Now we can make formulas/formula units and do stoichiometry calculations
+// Now we can make formulas/formula units and do stoichiometry calculations etc.
 

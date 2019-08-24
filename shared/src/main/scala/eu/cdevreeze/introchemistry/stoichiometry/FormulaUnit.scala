@@ -200,4 +200,13 @@ object FormulaUnit {
   val Hydronium = FormulaUnit("ion(H3O, +1)")
   val Ammonium = FormulaUnit("ion(NH4, +1)")
 
+  // Other somewhat well-known ionic formula units
+
+  val Bromate = FormulaUnit("ion(BrO3, -1)")
+
+  val Chlorate = FormulaUnit("ion(ClO3, -1)")
+  val Perchlorate = FormulaUnit("ion(ClO4, -1)")
+
+  val Chromate = FormulaUnit("ion(CrO4, -2)")
+
 }

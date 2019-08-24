@@ -60,7 +60,7 @@ object OxidationStates {
 
   // Other oxidation state rules
 
-  def getProbableOxidationNumberOfAtomInElement: Int = 0
+  def getOxidationNumberOfAtomInElement: Int = 0
 
   def getProbableOxidationNumberOfHydrogenInMetals: Int = -1
 
