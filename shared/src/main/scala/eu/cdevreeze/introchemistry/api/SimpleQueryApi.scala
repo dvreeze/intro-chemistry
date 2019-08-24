@@ -87,4 +87,12 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   def massOfAtomInGramPerMole(elementSymbol: ElementSymbol): BigDecimal = {
     StoichiometrySupport(periodicTable).massOfAtomInGramPerMole(elementSymbol)
   }
+
+  /**
+   * Postfix operator to turn a string into a FormulaUnit.
+   */
+  implicit class ToFormulaUnit(formulaUnitString: String) {
+
+    def fu: FormulaUnit = FormulaUnit(formulaUnitString)
+  }
 }
