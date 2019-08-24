@@ -56,7 +56,7 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
 
   // StoichiometrySupport
 
-  def avocadrosNumber: BigDecimal = StoichiometrySupport.AvogadrosNumber
+  def avogadrosNumber: BigDecimal = StoichiometrySupport.AvogadrosNumber
 
   /**
    * The mass of a formula unit in atomic mass units (or Daltons).
