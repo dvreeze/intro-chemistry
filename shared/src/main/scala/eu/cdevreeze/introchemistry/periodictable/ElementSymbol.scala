@@ -655,6 +655,8 @@ object ElementSymbol {
 
   val halogens: Set[ElementSymbol] = Set(F, Cl, Br, I, At, Ts)
 
+  val metals: Set[ElementSymbol] = allElements.filter(_.chemicalGroup.isMetalGroup).toSet
+
   def apply(symbolName: String): ElementSymbol = parse(symbolName)
 
   def parse(symbolName: String): ElementSymbol = {

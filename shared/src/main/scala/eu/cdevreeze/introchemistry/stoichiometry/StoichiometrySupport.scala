@@ -21,7 +21,10 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
 
 /**
- * Stoichiometry support, given a periodic table.
+ * Stoichiometry support, given a periodic table. In perticular, determining the mass of a molecule and conversions between
+ * mass and moles are supported. The atom counts in a molecule can be queried directly on the FormulaUnit. Balancing
+ * chemical equations is supported by the GaussianElimination and Formula types.
+ *
  *
  * @author Chris de Vreeze
  */

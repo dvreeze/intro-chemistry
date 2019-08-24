@@ -182,15 +182,21 @@ object FormulaUnit {
   // Some well-know ionic formula units
 
   val Hydroxide = FormulaUnit("ion(OH, -1)")
+
   val Carbonate = FormulaUnit("ion(CO3, -2)")
   val Bicarbonate = FormulaUnit("ion(HCO3, -1)")
+
   val Nitrate = FormulaUnit("ion(NO3, -1)")
   val Nitrite = FormulaUnit("ion(NO2, -1)")
+
   val Sulfate = FormulaUnit("ion(SO4, -2)")
   val Sulfite = FormulaUnit("ion(SO3, -2)")
+
   val Phosphate = FormulaUnit("ion(PO4, -3)")
+
   val Cyanide = FormulaUnit("ion(CN, -1)")
   val Acetate = FormulaUnit("ion(C2H3O2, -1)")
+
   val Hydronium = FormulaUnit("ion(H3O, +1)")
   val Ammonium = FormulaUnit("ion(NH4, +1)")
 

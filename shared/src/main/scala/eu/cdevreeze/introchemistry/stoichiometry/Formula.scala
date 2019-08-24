@@ -48,7 +48,9 @@ final case class Formula(reactants: Seq[Formula.FormulaUnitQuantity], products: 
   }
 
   def isBalancedWithRespectToCharges(productsOrReactants: Seq[Formula.FormulaUnitQuantity]): Boolean = {
-    productsOrReactants.map(fuq => fuq.quantity * fuq.formulaUnit.charge).sum == 0
+    val leftHandCount: Int = reactants.map(fuq => fuq.quantity * fuq.formulaUnit.charge).sum
+    val rightHandCount: Int = products.map(fuq => fuq.quantity * fuq.formulaUnit.charge).sum
+    leftHandCount == rightHandCount
   }
 
   /**
@@ -89,7 +91,7 @@ object Formula {
     }
 
     def formula[_: P]: P[Formula] =
-      P(reactant.rep(min = 1, sep = "+" ./) ~ "-->" ~ product.rep(min = 1, sep = "+" ./))
+      P(reactant.rep(min = 1, sep = "+"./) ~ "-->" ~ product.rep(min = 1, sep = "+"./))
         .map { case (reacts, prods) => Formula(reacts, prods) }
 
     def reactant[_: P]: P[FormulaUnitQuantity] = P(formulaUnitQuantity)
