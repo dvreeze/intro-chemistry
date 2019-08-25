@@ -19,7 +19,8 @@ package eu.cdevreeze.introchemistry.stoichiometry
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
- * A formula unit as used in stoichiometry. A formula unit may have a positive or negative charge.
+ * A formula unit as used in stoichiometry. A formula unit may have a positive or negative charge. The term formula unit
+ * is here abused to also include molecules, and not just ionic compounds.
  *
  * Example (neutral) formula units as strings (format returned by method "show" and parsed by method "parse"):
  * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula unit: "ion(SO4, -2)".
@@ -27,6 +28,8 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * Note that a formula unit is not the same as a molecule. See for example https://geometryofmolecules.com/formula-unit-vs-molecule/
  * and https://www.wisegeek.com/what-is-a-formula-unit.htm. See also
  * https://www.khanacademy.org/science/chemistry/atomic-structure-and-properties/introduction-to-compounds/a/paul-article-2.
+ *
+ * TODO Fix the terminology used here.
  *
  * @author Chris de Vreeze
  */
