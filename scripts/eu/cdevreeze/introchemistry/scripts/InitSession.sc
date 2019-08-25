@@ -14,6 +14,7 @@ val queryApi = new SimpleQueryApi(periodicTable)
 
 import queryApi._
 import ElementSymbol._
+import scala.util.chaining._
 
 // Now we can make formulas/formula units and do stoichiometry calculations etc.
 
