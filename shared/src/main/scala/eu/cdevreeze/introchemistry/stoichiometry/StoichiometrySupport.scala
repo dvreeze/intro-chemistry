@@ -22,30 +22,29 @@ import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
 
 /**
  * Stoichiometry support, given a periodic table. In perticular, determining the mass of a molecule and conversions between
- * mass and moles are supported. The atom counts in a molecule can be queried directly on the FormulaUnit. Balancing
- * chemical equations is supported by the GaussianElimination and Formula types.
- *
+ * mass and moles are supported. The atom counts in a molecule can be queried directly on the Formula. Balancing
+ * chemical equations is supported by the GaussianElimination and ChemicalEquation types.
  *
  * @author Chris de Vreeze
  */
 final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 
   /**
-   * The mass of a formula unit in atomic mass units (or Daltons).
+   * The mass of a formula in atomic mass units (or Daltons).
    */
-  def massInAmu(formulaUnit: FormulaUnit): BigDecimal = {
-    formulaUnit.atomCounts.map { case (elementSymbol: ElementSymbol, atomCount: Int) =>
+  def massInAmu(formula: Formula): BigDecimal = {
+    formula.atomCounts.map { case (elementSymbol: ElementSymbol, atomCount: Int) =>
       val atomMassOfAtom: BigDecimal = massOfAtomInAmu(elementSymbol)
       atomMassOfAtom * atomCount
     }.sum
   }
 
   /**
-   * Returns `massInAmu(formulaUnit)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
-   * of a Mole (Avogadro's number as quantity): grams per mole of the formula unit equals the atomic mass (amu) of the formula unit.
+   * Returns `massInAmu(formula)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
+   * of a Mole (Avogadro's number as quantity): grams per mole of the formula equals the atomic mass (amu) of the formula.
    */
-  def massInGramPerMole(formulaUnit: FormulaUnit): BigDecimal = {
-    massInAmu(formulaUnit)
+  def massInGramPerMole(formula: Formula): BigDecimal = {
+    massInAmu(formula)
   }
 
   /**

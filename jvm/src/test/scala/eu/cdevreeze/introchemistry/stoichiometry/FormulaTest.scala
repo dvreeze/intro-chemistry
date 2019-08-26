@@ -16,8 +16,8 @@
 
 package eu.cdevreeze.introchemistry.stoichiometry
 
-import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 import org.scalatest.funsuite.AnyFunSuite
+import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
  * Test for Formula creation and parsing and querying.
@@ -27,277 +27,130 @@ import org.scalatest.funsuite.AnyFunSuite
 class FormulaTest extends AnyFunSuite {
 
   import ElementSymbol._
-  import Formula._
 
-  test("testParseSimpleFormula") {
-    val formulaAsString = "4 Fe + 3 O2 --> 2 Fe2O3"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Fe"), 4), FormulaUnitQuantity(FormulaUnit("O2"), 3))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Fe2O3"), 2))) {
-      formula.products
-    }
+  test("testParseSingleAtomFormula") {
+    val frmAsString = "Na"
+    val frm = Formula(frmAsString)
 
     assertResult(true) {
-      formula.isBalanced
+      frm.isElement
     }
 
-    assertResult(formulaAsString) {
-      formula.show
+    assertResult(Map(Na -> 1)) {
+      frm.atomCounts
+    }
+
+    assertResult(0) {
+      frm.charge
+    }
+
+    assertResult(frmAsString) {
+      frm.show
     }
   }
 
-  test("testParseSimpleUnbalancedFormula") {
-    val formulaAsString = "4 Fe + 1 O2 --> 2 Fe2O3"
-    val formula = Formula(formulaAsString)
+  test("testParseElementFormula") {
+    val frmAsString = "O2"
+    val frm = Formula(frmAsString)
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Fe"), 4), FormulaUnitQuantity(FormulaUnit("O2"), 1))) {
-      formula.reactants
+    assertResult(true) {
+      frm.isElement
     }
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Fe2O3"), 2))) {
-      formula.products
+    assertResult(Map(O -> 2)) {
+      frm.atomCounts
     }
+
+    assertResult(0) {
+      frm.charge
+    }
+
+    assertResult(frmAsString) {
+      frm.show
+    }
+  }
+
+  test("testParseSimpleCompoundFormula") {
+    val frmAsString = "H2O"
+    val frm = Formula(frmAsString)
 
     assertResult(false) {
-      formula.isBalanced
+      frm.isElement
     }
 
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseSimpleIonicFormula") {
-    val formulaAsString = "1 NaCl --> 1 ion(Na, 1) + 1 ion(Cl, -1)"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("NaCl"), 1))) {
-      formula.reactants
+    assertResult(Map(H -> 2, O -> 1)) {
+      frm.atomCounts
     }
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Na, 1)"), 1), FormulaUnitQuantity(FormulaUnit("ion(Cl, -1)"), 1))) {
-      formula.products
+    assertResult(0) {
+      frm.charge
     }
 
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
+    assertResult(frmAsString) {
+      frm.show
     }
   }
 
-  test("testParseSimpleUnbalancedIonicFormula") {
-    val formulaAsString = "1 NaCl --> 1 ion(Na, 1) + 2 ion(Cl, -1)"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("NaCl"), 1))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Na, 1)"), 1), FormulaUnitQuantity(FormulaUnit("ion(Cl, -1)"), 2))) {
-      formula.products
-    }
+  test("testParseComplexCompoundFormula") {
+    val frmAsString = "Ca(H2PO4)2H2O"
+    val frm = Formula(frmAsString)
 
     assertResult(false) {
-      formula.isBalanced
+      frm.isElement
     }
 
-    assertResult(formulaAsString) {
-      formula.show
+    assertResult(Map(Ca -> 1, H -> 6, P -> 2, O -> 9)) {
+      frm.atomCounts
+    }
+
+    assertResult(0) {
+      frm.charge
+    }
+
+    assertResult(frmAsString) {
+      frm.show
     }
   }
 
-  test("testParseSimpleUnbalancedWrtChargeIonicFormula") {
-    val formulaAsString = "1 NaCl --> 1 ion(Na, 1) + 1 ion(Cl, -3)"
-    val formula = Formula(formulaAsString)
+  test("testParseSingleAtomIonicFormula") {
+    val frmAsString = "ion(Na, 1)"
+    val frm = Formula(frmAsString)
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("NaCl"), 1))) {
-      formula.reactants
+    assertResult(true) {
+      frm.isElement
     }
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Na, 1)"), 1), FormulaUnitQuantity(FormulaUnit("ion(Cl, -3)"), 1))) {
-      formula.products
+    assertResult(Map(Na -> 1)) {
+      frm.atomCounts
     }
+
+    assertResult(1) {
+      frm.charge
+    }
+
+    assertResult(frmAsString) {
+      frm.show
+    }
+  }
+
+  test("testParseIonicCompoundFormula") {
+    val frmAsString = Formula.Phosphate.show.ensuring(_ == "ion(PO4, -3)")
+    val frm = Formula(frmAsString)
 
     assertResult(false) {
-      formula.isBalanced
+      frm.isElement
     }
 
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseRelativelySimpleFormula") {
-    val formulaAsString = "1 C6H12O6 + 6 O2 --> 6 CO2 + 6 H2O"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("C6H12O6"), 1), FormulaUnitQuantity(FormulaUnit("O2"), 6))) {
-      formula.reactants
+    assertResult(Map(P -> 1, O -> 4)) {
+      frm.atomCounts
     }
 
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CO2"), 6), FormulaUnitQuantity(FormulaUnit("H2O"), 6))) {
-      formula.products
+    assertResult(-3) {
+      frm.charge
     }
 
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseRelativelySimpleUnbalancedFormula") {
-    val formulaAsString = "1 C6H12O6 + 6 O2 --> 4 CO2 + 6 H2O"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("C6H12O6"), 1), FormulaUnitQuantity(FormulaUnit("O2"), 6))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CO2"), 4), FormulaUnitQuantity(FormulaUnit("H2O"), 6))) {
-      formula.products
-    }
-
-    assertResult(false) {
-      formula.isBalanced
-    }
-
-    assertResult(true) {
-      formula.isBalancedForElement(H)
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseOtherSimpleIonicFormula") {
-    val formulaAsString = "1 CuCl2 --> 1 ion(Cu, 2) + 2 ion(Cl, -1)"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CuCl2"), 1))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Cu, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(Cl, -1)"), 2))) {
-      formula.products
-    }
-
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseYetAnotherSimpleIonicFormula") {
-    val formulaAsString = "1 CuSO4 --> 1 ion(Cu, 2) + 1 ion(SO4, -2)"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("CuSO4"), 1))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Cu, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(SO4, -2)"), 1))) {
-      formula.products
-    }
-
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseRelativelySimpleIonicFormula") {
-    val formulaAsString = "1 Ba(C2H3O2)2 --> 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Ba(C2H3O2)2"), 1))) {
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("ion(Ba, 2)"), 1), FormulaUnitQuantity(FormulaUnit("ion(C2H3O2, -1)"), 2))) {
-      formula.products
-    }
-
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseComplexFormula") {
-    val formulaAsString = "1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O --> 5 Ca(H2PO4)2H2O"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(
-      FormulaUnitQuantity(FormulaUnit("Ca5(PO4)3OH"), 1),
-      FormulaUnitQuantity(FormulaUnit("H3PO4"), 7),
-      FormulaUnitQuantity(FormulaUnit("H2O"), 4))) {
-
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Ca(H2PO4)2H2O"), 5))) {
-      formula.products
-    }
-
-    assertResult(true) {
-      formula.isBalanced
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
-    }
-  }
-
-  test("testParseComplexUnbalancedFormula") {
-    val formulaAsString = "1 Ca5(PO24)3OH + 7 H3PO4 + 4 H2O --> 5 Ca(H2PO4)2H2O"
-    val formula = Formula(formulaAsString)
-
-    assertResult(Seq(
-      FormulaUnitQuantity(FormulaUnit("Ca5(PO24)3OH"), 1),
-      FormulaUnitQuantity(FormulaUnit("H3PO4"), 7),
-      FormulaUnitQuantity(FormulaUnit("H2O"), 4))) {
-
-      formula.reactants
-    }
-
-    assertResult(Seq(FormulaUnitQuantity(FormulaUnit("Ca(H2PO4)2H2O"), 5))) {
-      formula.products
-    }
-
-    assertResult(false) {
-      formula.isBalanced
-    }
-
-    assertResult(true) {
-      formula.isBalancedForElement(Ca) && formula.isBalancedForElement(P) && formula.isBalancedForElement(H)
-    }
-
-    assertResult(false) {
-      formula.isBalancedForElement(O)
-    }
-
-    assertResult(formulaAsString) {
-      formula.show
+    assertResult(frmAsString) {
+      frm.show
     }
   }
 }

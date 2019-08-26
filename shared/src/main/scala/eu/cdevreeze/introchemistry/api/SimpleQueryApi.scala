@@ -20,7 +20,7 @@ import eu.cdevreeze.introchemistry.periodictable.Element
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 import eu.cdevreeze.introchemistry.periodictable.OxidationStates
 import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
-import eu.cdevreeze.introchemistry.stoichiometry.FormulaUnit
+import eu.cdevreeze.introchemistry.stoichiometry.Formula
 import eu.cdevreeze.introchemistry.stoichiometry.StoichiometrySupport
 
 /**
@@ -59,18 +59,18 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   def avogadrosNumber: BigDecimal = StoichiometrySupport.AvogadrosNumber
 
   /**
-   * The mass of a formula unit in atomic mass units (or Daltons).
+   * The mass of a formula in atomic mass units (or Daltons).
    */
-  def massInAmu(formulaUnit: FormulaUnit): BigDecimal = {
-    StoichiometrySupport(periodicTable).massInAmu(formulaUnit)
+  def massInAmu(formula: Formula): BigDecimal = {
+    StoichiometrySupport(periodicTable).massInAmu(formula)
   }
 
   /**
-   * Returns `massInAmu(formulaUnit)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
-   * of a Mole (Avogadro's number as quantity): grams per mole of the formula unit equals the atomic mass (amu) of the formula unit.
+   * Returns `massInAmu(formula)`, interpreted as the mass in grams per mole. That is the beauty of the quantity
+   * of a Mole (Avogadro's number as quantity): grams per mole of the formula equals the atomic mass (amu) of the formula.
    */
-  def massInGramPerMole(formulaUnit: FormulaUnit): BigDecimal = {
-    StoichiometrySupport(periodicTable).massInGramPerMole(formulaUnit)
+  def massInGramPerMole(formula: Formula): BigDecimal = {
+    StoichiometrySupport(periodicTable).massInGramPerMole(formula)
   }
 
   /**
@@ -89,10 +89,10 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   }
 
   /**
-   * Postfix operator to turn a string into a FormulaUnit.
+   * Postfix operator to turn a string into a Formula.
    */
-  implicit class ToFormulaUnit(formulaUnitString: String) {
+  implicit class ToFormula(formulaString: String) {
 
-    def fu: FormulaUnit = FormulaUnit(formulaUnitString)
+    def f: Formula = Formula(formulaString)
   }
 }

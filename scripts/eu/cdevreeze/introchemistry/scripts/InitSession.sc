@@ -16,5 +16,5 @@ import queryApi._
 import ElementSymbol._
 import scala.util.chaining._
 
-// Now we can make formulas/formula units and do stoichiometry calculations etc.
+// Now we can make formulas/reactions and do stoichiometry calculations etc.
 
