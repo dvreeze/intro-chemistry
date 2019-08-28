@@ -19,8 +19,9 @@ package eu.cdevreeze.introchemistry.stoichiometry
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
- * A formula as used in stoichiometry. A formula may have a positive or negative charge, so it can represent either
- * a molecule (which is neutral) or an ion (positively charged cation or negatively charged anion).
+ * A formula as used in stoichiometry. A formula may have a net positive or negative charge, so it can represent either
+ * a molecule or ionic compound (which is neutral) on the one hand, or an ion (positively charged cation or negatively
+ * charged anion) on the other hand.
  *
  * Example (neutral) formulas as strings (format returned by method "show" and parsed by method "parse"):
  * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula: "ion(SO4, -2)".
