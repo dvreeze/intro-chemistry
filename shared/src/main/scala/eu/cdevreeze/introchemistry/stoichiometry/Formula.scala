@@ -59,6 +59,10 @@ sealed trait Formula {
   def show: String
 }
 
+/**
+ * A neutral formula, which is either a molecule (element or compound molecule) or an ionic compound (as opposed to
+ * an ion). In other words, any species that has no net charge.
+ */
 final case class NeutralFormula(partCounts: Seq[Formula.PartQuantity]) extends Formula {
   require(partCounts.nonEmpty, s"Missing 'parts' in formula $this")
 
@@ -83,6 +87,9 @@ final case class NeutralFormula(partCounts: Seq[Formula.PartQuantity]) extends F
   def show: String = partCounts.map(_.show).mkString
 }
 
+/**
+ * An ionic formula, which is either an element gaining or losing electrons, or a compound gaining or losing electrons.
+ */
 final case class IonicFormula(neutralFormula: NeutralFormula, charge: Int) extends Formula {
   require(charge != 0, s"The charge must not be 0")
 
@@ -169,7 +176,8 @@ object Formula {
       P("ion" ~ "(" ~/ neutralFormula ~ "," ~ " ".rep(0) ~ charge ~ ")")
         .map { case (fu, charge) => IonicFormula(fu, charge) }
 
-    def partQuantity[_: P]: P[PartQuantity] = P(part ~ count.?).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
+    def partQuantity[_: P]: P[PartQuantity] =
+      P(part ~ count.?).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
 
     def part[_: P]: P[Part] = P(elementPart | compoundPart)
 
