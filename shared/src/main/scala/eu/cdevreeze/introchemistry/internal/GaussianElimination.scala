@@ -73,7 +73,9 @@ object GaussianElimination {
    */
   private def processColumnTopDown[A](colIndex: Int, matrix: Matrix[A])(implicit numeric: Fractional[A]): Matrix[A] = {
     val zeroColumns = for (r <- colIndex.until(matrix.rowCount); c <- 0.until(colIndex)) yield matrix.cell(r, c)
-    assert(zeroColumns.forall(_ == numeric.zero))
+    require(
+      zeroColumns.forall(_ == numeric.zero),
+      s"Expected only zeroes in columns under $colIndex in rows from $colIndex (both 0-based)")
 
     val startMatrix: Matrix[A] =
       if (matrix.cell(colIndex, colIndex) == numeric.zero) {

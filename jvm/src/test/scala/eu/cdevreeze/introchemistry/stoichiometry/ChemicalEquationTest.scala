@@ -30,14 +30,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   import ChemicalEquation._
 
   test("testParseSimpleChemicalEquation") {
-    val reactionAsString = "4 Fe + 3 O2 --> 2 Fe2O3"
+    val reactionAsString = "4 Fe (s) + 3 O2 (g) --> 2 Fe2O3 (s)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("Fe"), 4), FormulaQuantity(Formula("O2"), 3))) {
+    assertResult(Seq(FormulaQuantity(Formula("Fe"), Some(Phase.Solid), 4), FormulaQuantity(Formula("O2"), Some(Phase.Gas), 3))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("Fe2O3"), 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("Fe2O3"), Some(Phase.Solid), 2))) {
       reaction.products
     }
 
@@ -51,14 +51,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedChemicalEquation") {
-    val reactionAsString = "4 Fe + 1 O2 --> 2 Fe2O3"
+    val reactionAsString = "4 Fe (s) + 1 O2 (g) --> 2 Fe2O3 (s)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("Fe"), 4), FormulaQuantity(Formula("O2"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("Fe"), Some(Phase.Solid), 4), FormulaQuantity(Formula("O2"), Some(Phase.Gas), 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("Fe2O3"), 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("Fe2O3"), Some(Phase.Solid), 2))) {
       reaction.products
     }
 
@@ -72,14 +72,17 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl --> 1 ion(Na, 1) + 1 ion(Cl, -1)"
+    val reactionAsString = "1 NaCl (s) --> 1 ion(Na, 1) (aq) + 1 ion(Cl, -1) (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("NaCl"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Na, 1)"), 1), FormulaQuantity(Formula("ion(Cl, -1)"), 1))) {
+    assertResult(Seq(
+      FormulaQuantity(Formula("ion(Na, 1)"), Some(Phase.Aqueous), 1),
+      FormulaQuantity(Formula("ion(Cl, -1)"), Some(Phase.Aqueous), 1))) {
+
       reaction.products
     }
 
@@ -93,14 +96,17 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl --> 1 ion(Na, 1) + 2 ion(Cl, -1)"
+    val reactionAsString = "1 NaCl (s) --> 1 ion(Na, 1) (aq) + 2 ion(Cl, -1) (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("NaCl"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Na, 1)"), 1), FormulaQuantity(Formula("ion(Cl, -1)"), 2))) {
+    assertResult(Seq(
+      FormulaQuantity(Formula("ion(Na, 1)"), Some(Phase.Aqueous), 1),
+      FormulaQuantity(Formula("ion(Cl, -1)"), Some(Phase.Aqueous), 2))) {
+
       reaction.products
     }
 
@@ -117,11 +123,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 NaCl --> 1 ion(Na, 1) + 1 ion(Cl, -3)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("NaCl"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("NaCl"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Na, 1)"), 1), FormulaQuantity(Formula("ion(Cl, -3)"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("ion(Na, 1)"), None, 1), FormulaQuantity(Formula("ion(Cl, -3)"), None, 1))) {
       reaction.products
     }
 
@@ -138,11 +144,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 C6H12O6 + 6 O2 --> 6 CO2 + 6 H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), 1), FormulaQuantity(Formula("O2"), 6))) {
+    assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), None, 1), FormulaQuantity(Formula("O2"), None, 6))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("CO2"), 6), FormulaQuantity(Formula("H2O"), 6))) {
+    assertResult(Seq(FormulaQuantity(Formula("CO2"), None, 6), FormulaQuantity(Formula("H2O"), None, 6))) {
       reaction.products
     }
 
@@ -159,11 +165,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 C6H12O6 + 6 O2 --> 4 CO2 + 6 H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), 1), FormulaQuantity(Formula("O2"), 6))) {
+    assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), None, 1), FormulaQuantity(Formula("O2"), None, 6))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("CO2"), 4), FormulaQuantity(Formula("H2O"), 6))) {
+    assertResult(Seq(FormulaQuantity(Formula("CO2"), None, 4), FormulaQuantity(Formula("H2O"), None, 6))) {
       reaction.products
     }
 
@@ -184,11 +190,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 CuCl2 --> 1 ion(Cu, 2) + 2 ion(Cl, -1)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("CuCl2"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("CuCl2"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), 1), FormulaQuantity(Formula("ion(Cl, -1)"), 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), None, 1), FormulaQuantity(Formula("ion(Cl, -1)"), None, 2))) {
       reaction.products
     }
 
@@ -205,11 +211,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 CuSO4 --> 1 ion(Cu, 2) + 1 ion(SO4, -2)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("CuSO4"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("CuSO4"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), 1), FormulaQuantity(Formula("ion(SO4, -2)"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), None, 1), FormulaQuantity(Formula("ion(SO4, -2)"), None, 1))) {
       reaction.products
     }
 
@@ -226,11 +232,11 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reactionAsString = "1 Ba(C2H3O2)2 --> 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)"
     val reaction = ChemicalEquation(reactionAsString)
 
-    assertResult(Seq(FormulaQuantity(Formula("Ba(C2H3O2)2"), 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("Ba(C2H3O2)2"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Ba, 2)"), 1), FormulaQuantity(Formula("ion(C2H3O2, -1)"), 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("ion(Ba, 2)"), None, 1), FormulaQuantity(Formula("ion(C2H3O2, -1)"), None, 2))) {
       reaction.products
     }
 
@@ -248,14 +254,14 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(
-      FormulaQuantity(Formula("Ca5(PO4)3OH"), 1),
-      FormulaQuantity(Formula("H3PO4"), 7),
-      FormulaQuantity(Formula("H2O"), 4))) {
+      FormulaQuantity(Formula("Ca5(PO4)3OH"), None, 1),
+      FormulaQuantity(Formula("H3PO4"), None, 7),
+      FormulaQuantity(Formula("H2O"), None, 4))) {
 
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("Ca(H2PO4)2H2O"), 5))) {
+    assertResult(Seq(FormulaQuantity(Formula("Ca(H2PO4)2H2O"), None, 5))) {
       reaction.products
     }
 
@@ -273,14 +279,14 @@ class ChemicalEquationTest extends AnyFunSuite {
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(
-      FormulaQuantity(Formula("Ca5(PO24)3OH"), 1),
-      FormulaQuantity(Formula("H3PO4"), 7),
-      FormulaQuantity(Formula("H2O"), 4))) {
+      FormulaQuantity(Formula("Ca5(PO24)3OH"), None, 1),
+      FormulaQuantity(Formula("H3PO4"), None, 7),
+      FormulaQuantity(Formula("H2O"), None, 4))) {
 
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("Ca(H2PO4)2H2O"), 5))) {
+    assertResult(Seq(FormulaQuantity(Formula("Ca(H2PO4)2H2O"), None, 5))) {
       reaction.products
     }
 

@@ -72,11 +72,13 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
 
 object ChemicalEquation {
 
-  final case class FormulaQuantity(formula: Formula, quantity: Int) {
+  final case class FormulaQuantity(formula: Formula, phaseOption: Option[Phase], quantity: Int) {
     require(quantity > 0, s"Quantity must be > 0")
 
     def show: String = {
-      s"$quantity ${formula.show}"
+      val phaseString = phaseOption.map(ph => s"($ph)").getOrElse("")
+
+      s"$quantity ${formula.show} $phaseString".trim
     }
   }
 
@@ -108,8 +110,10 @@ object ChemicalEquation {
     def product[_: P]: P[FormulaQuantity] = P(formulaQuantity)
 
     def formulaQuantity[_: P]: P[FormulaQuantity] =
-      P(count ~/ Formula.Parser.formula)
-        .map { case (cnt, fu) => FormulaQuantity(fu, cnt) }
+      P(count ~/ Formula.Parser.formula ~ phase.?)
+        .map { case (cnt, f, phaseOpt) => FormulaQuantity(f, phaseOpt, cnt) }
+
+    def phase[_: P]: P[Phase] = P("(" ~ ("s" | "l" | "g" | "aq").! ~ ")").map(s => Phase.parse(s))
 
     def count[_: P]: P[Int] = P(CharIn("0-9").rep(1).!).map(_.toInt).filter(_ > 0)
   }
@@ -120,16 +124,32 @@ object ChemicalEquation {
 
     def build: ChemicalEquation = ChemicalEquation(reactants, products)
 
+    def plusReactant(quantity: Int, formula: Formula, phase: Phase): Builder = {
+      Builder(reactants.appended(FormulaQuantity(formula, Some(phase), quantity)), products)
+    }
+
     def plusReactant(quantity: Int, formula: Formula): Builder = {
-      Builder(reactants.appended(FormulaQuantity(formula, quantity)), products)
+      Builder(reactants.appended(FormulaQuantity(formula, None, quantity)), products)
+    }
+
+    def plusReactant(quantity: Int, formulaString: String, phaseString: String): Builder = {
+      plusReactant(quantity, Formula(formulaString), Phase(phaseString))
     }
 
     def plusReactant(quantity: Int, formulaString: String): Builder = {
       plusReactant(quantity, Formula(formulaString))
     }
 
+    def plusProduct(quantity: Int, formula: Formula, phase: Phase): Builder = {
+      Builder(reactants, products.appended(FormulaQuantity(formula, Some(phase), quantity)))
+    }
+
     def plusProduct(quantity: Int, formula: Formula): Builder = {
-      Builder(reactants, products.appended(FormulaQuantity(formula, quantity)))
+      Builder(reactants, products.appended(FormulaQuantity(formula, None, quantity)))
+    }
+
+    def plusProduct(quantity: Int, formulaString: String, phaseString: String): Builder = {
+      plusProduct(quantity, Formula(formulaString), Phase(phaseString))
     }
 
     def plusProduct(quantity: Int, formulaString: String): Builder = {

@@ -22,6 +22,7 @@ import eu.cdevreeze.introchemistry.periodictable.OxidationStates
 import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
 import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
 import eu.cdevreeze.introchemistry.stoichiometry.Formula
+import eu.cdevreeze.introchemistry.stoichiometry.Phase
 import eu.cdevreeze.introchemistry.stoichiometry.StoichiometrySupport
 
 /**
@@ -94,14 +95,7 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   /**
    * Returns the 7 diatomic elements as element symbols.
    */
-  def diatomicElements: Set[ElementSymbol] = {
-    import ElementSymbol._
-
-    // See https://www.thoughtco.com/what-are-the-seven-diatomic-elements-606623
-    // "Have No Fear Of Ice Cold Beer"
-
-    Set(H, N, F, O, I, Cl, Br)
-  }
+  def diatomicElements: Set[ElementSymbol] = ElementSymbol.diatomicElements
 
   // Conversions from strings to formulas or chemical equations
 
@@ -111,6 +105,14 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   implicit class ToFormula(formulaString: String) {
 
     def f: Formula = Formula(formulaString)
+  }
+
+  /**
+   * Postfix operator to turn a string into a Phase.
+   */
+  implicit class ToPhase(phaseString: String) {
+
+    def p: Phase = Phase(phaseString)
   }
 
   /**

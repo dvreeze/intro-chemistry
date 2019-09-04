@@ -657,6 +657,14 @@ object ElementSymbol {
 
   val metals: Set[ElementSymbol] = allElements.filter(_.chemicalGroup.isMetalGroup).toSet
 
+  /**
+   * Returns the 7 diatomic elements as element symbols.
+   *
+   * See https://www.thoughtco.com/what-are-the-seven-diatomic-elements-606623:
+   * "Have No Fear Of Ice Cold Beer"
+   */
+  val diatomicElements: Set[ElementSymbol] = Set(H, N, F, O, I, Cl, Br)
+
   def apply(symbolName: String): ElementSymbol = parse(symbolName)
 
   def parse(symbolName: String): ElementSymbol = {
