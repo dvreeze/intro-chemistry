@@ -101,8 +101,10 @@ object GaussianElimination {
         if (accMatrix.cell(currRowIndex, colIndex) == numeric.zero) {
           accMatrix
         } else {
-          val factor = numeric.negate(numeric.div(accMatrix.cell(currRowIndex, colIndex), referenceCell))
-          accMatrix.addOtherMultipliedRow(currRowIndex, referenceRowIndex, factor)
+          val factor1 = accMatrix.cell(referenceRowIndex, colIndex)
+          val factor2 = numeric.negate(accMatrix.cell(currRowIndex, colIndex))
+
+          accMatrix.addOtherRowMultiplyingBoth(currRowIndex, referenceRowIndex, factor1, factor2)
         }
       }
     }
@@ -133,8 +135,10 @@ object GaussianElimination {
         if (accMatrix.cell(currRowIndex, colIndex) == numeric.zero) {
           accMatrix
         } else {
-          val factor = numeric.negate(numeric.div(accMatrix.cell(currRowIndex, colIndex), referenceCell))
-          accMatrix.addOtherMultipliedRow(currRowIndex, referenceRowIndex, factor)
+          val factor1 = accMatrix.cell(referenceRowIndex, colIndex)
+          val factor2 = numeric.negate(accMatrix.cell(currRowIndex, colIndex))
+
+          accMatrix.addOtherRowMultiplyingBoth(currRowIndex, referenceRowIndex, factor1, factor2)
         }
       }
     }

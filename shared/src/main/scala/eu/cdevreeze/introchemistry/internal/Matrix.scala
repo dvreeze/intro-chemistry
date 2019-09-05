@@ -80,6 +80,17 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Fractional[A]) {
     Matrix(rows.updated(rowIndex, addRows(rows(rowIndex), otherRowToAdd)))
   }
 
+  def addOtherRowMultiplyingBoth(rowIndex: Int, otherRowIndex: Int, factorForThisRow: A, factorForOtherRow: A): Matrix[A] = {
+    require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
+    require(otherRowIndex >= 0 && otherRowIndex < rowCount, s"Row index $otherRowIndex out of bounds")
+    require(otherRowIndex != rowIndex, s"The same 2 row indices are not allowed")
+
+    val otherRowToAdd = rows(otherRowIndex).map(n => numeric.times(n, factorForOtherRow))
+    val thisRowMultiplied = rows(rowIndex).map(n => numeric.times(n, factorForThisRow))
+
+    Matrix(rows.updated(rowIndex, addRows(thisRowMultiplied, otherRowToAdd)))
+  }
+
   def map[B](f: A => B)(implicit num: Fractional[B]): Matrix[B] = {
     Matrix(rows.map(row => row.map(f)))
   }

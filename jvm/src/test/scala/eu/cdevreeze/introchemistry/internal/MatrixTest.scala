@@ -65,6 +65,12 @@ class MatrixTest extends AnyFunSuite {
     assertResult(expectedResult) {
       result
     }
+
+    val result2 = matrix.addOtherRowMultiplyingBoth(1, 0, 1, BigDecimal(-1) / 2)
+
+    assertResult(expectedResult) {
+      result2
+    }
   }
 
   test("testDivideRow") {
@@ -214,6 +220,69 @@ class MatrixTest extends AnyFunSuite {
         Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
         Seq(BigDecimal(0), BigDecimal(20), BigDecimal(5), BigDecimal(-32), BigDecimal(0)),
         Seq(BigDecimal(5), BigDecimal(15), BigDecimal(10), BigDecimal(-30), BigDecimal(0))
+      )),
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(20), BigDecimal(5), BigDecimal(-32), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(15), BigDecimal(10), BigDecimal(-29), BigDecimal(0))
+      )),
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(0), BigDecimal(5), BigDecimal(-4), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(15), BigDecimal(10), BigDecimal(-29), BigDecimal(0))
+      )),
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(0), BigDecimal(5), BigDecimal(-4), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(0), BigDecimal(10), BigDecimal(-8), BigDecimal(0))
+      )),
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(0), BigDecimal(5), BigDecimal(-4), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0), BigDecimal(0))
+      )),
+    )
+
+    assertResult(expectedResults) {
+      results
+    }
+  }
+
+  test("testOtherGaussianEliminationWorkflowAgain") {
+    // See https://chem.libretexts.org/Bookshelves/General_Chemistry/Map%3A_Chemistry_-_The_Central_Science_(Brown_et_al.)/03._Stoichiometry%3A_Calculations_with_Chemical_Formulas_and_Equations/3.1%3A_Chemical_Equations
+    val matrix = Matrix(Seq(
+      Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+      Seq(BigDecimal(3), BigDecimal(1), BigDecimal(0), BigDecimal(-2), BigDecimal(0)),
+      Seq(BigDecimal(13), BigDecimal(4), BigDecimal(1), BigDecimal(-9), BigDecimal(0)),
+      Seq(BigDecimal(1), BigDecimal(3), BigDecimal(2), BigDecimal(-6), BigDecimal(0))
+    ))
+
+    var results: Seq[Matrix[BigDecimal]] = Seq.empty
+
+    matrix
+      .addOtherRowMultiplyingBoth(1, 0, BigDecimal(5), BigDecimal(-3)).tap(r => results = results.appended(r))
+      .addOtherRowMultiplyingBoth(2, 0, BigDecimal(5), BigDecimal(-13)).tap(r => results = results.appended(r))
+      .addOtherRowMultiplyingBoth(3, 0, BigDecimal(5), BigDecimal(-1)).tap(r => results = results.appended(r))
+      .addOtherMultipliedRow(2, 1, BigDecimal(-4)).tap(r => results = results.appended(r))
+      .addOtherMultipliedRow(3, 1, BigDecimal(-3)).tap(r => results = results.appended(r))
+      .addOtherMultipliedRow(3, 2, BigDecimal(-2)).tap(r => results = results.appended(r))
+
+    val expectedResults = Seq(
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(13), BigDecimal(4), BigDecimal(1), BigDecimal(-9), BigDecimal(0)),
+        Seq(BigDecimal(1), BigDecimal(3), BigDecimal(2), BigDecimal(-6), BigDecimal(0))
+      )),
+      Matrix(Seq(
+        Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(5), BigDecimal(0), BigDecimal(-7), BigDecimal(0)),
+        Seq(BigDecimal(0), BigDecimal(20), BigDecimal(5), BigDecimal(-32), BigDecimal(0)),
+        Seq(BigDecimal(1), BigDecimal(3), BigDecimal(2), BigDecimal(-6), BigDecimal(0))
       )),
       Matrix(Seq(
         Seq(BigDecimal(5), BigDecimal(0), BigDecimal(0), BigDecimal(-1), BigDecimal(0)),

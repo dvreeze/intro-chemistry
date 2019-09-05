@@ -105,9 +105,7 @@ class GaussianEliminationTest extends AnyFunSuite {
       Seq(BigDecimal(4), BigDecimal(2), BigDecimal(1), BigDecimal(2))
     ))
 
-    val eliminationResult =
-      GaussianElimination.computeGaussJordanEchelonForm(matrix)
-        .pipe(m => m.map(n => BigDecimal(n.toInt)))
+    val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
     assertResult(true) {
       GaussianElimination.isFoundToHaveExactlyOneSolution(eliminationResult)
