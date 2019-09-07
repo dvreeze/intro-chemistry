@@ -20,7 +20,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
  * A formula as used in stoichiometry. A formula may have a net positive or negative charge, so it can represent either
- * a molecule or ionic compound (which is neutral) on the one hand, or an ion (positively charged cation or negatively
+ * a molecule or atomic element or ionic compound (which is neutral) on the one hand, or an ion (positively charged cation or negatively
  * charged anion) on the other hand.
  *
  * Example (neutral) formulas as strings (format returned by method "show" and parsed by method "parse"):
@@ -198,18 +198,21 @@ object Formula {
   val Hydroxide = Formula("ion(OH, -1)")
 
   val Carbonate = Formula("ion(CO3, -2)")
-  val Bicarbonate = Formula("ion(HCO3, -1)")
+  val Bicarbonate = Formula("ion(HCO3, -1)") // also called hydrogen carbonate
 
   val Nitrate = Formula("ion(NO3, -1)")
   val Nitrite = Formula("ion(NO2, -1)")
 
   val Sulfate = Formula("ion(SO4, -2)")
+  val HydrogenSulfate = Formula("ion(HSO4, -1)") // also called bisulfate
   val Sulfite = Formula("ion(SO3, -2)")
 
   val Phosphate = Formula("ion(PO4, -3)")
+  val HydrogenPhosphate = Formula("ion(HPO4, -2)")
+  val DihydrogenPhosphate = Formula("ion(H2PO4, -1)")
 
   val Cyanide = Formula("ion(CN, -1)")
-  val Acetate = Formula("ion(C2H3O2, -1)")
+  val Acetate = Formula("ion(C2H3O2, -1)") // Could also be written as: ion(CH3CO2, -1)
 
   val Hydronium = Formula("ion(H3O, +1)")
   val Ammonium = Formula("ion(NH4, +1)")
@@ -222,5 +225,8 @@ object Formula {
   val Perchlorate = Formula("ion(ClO4, -1)")
 
   val Chromate = Formula("ion(CrO4, -2)")
+  val Dichromate = Formula("ion(Cr2O7, -2)")
+
+  val Permanganate = Formula("ion(MnO4, -1)")
 
 }

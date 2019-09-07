@@ -21,7 +21,7 @@ package eu.cdevreeze.introchemistry.internal
  *
  * @author Chris de Vreeze
  */
-final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Fractional[A]) {
+final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Numeric[A]) {
   require(rows.nonEmpty, s"No rows found")
   require(rows(0).nonEmpty, s"The first row is empty, which is not allowed")
   require(rows.forall(r => r.size == rows(0).size), s"All rows must have the same number of columns")
@@ -64,13 +64,6 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Fractional[A]) {
     Matrix(rows.updated(rowIndex, rows(rowIndex).map(n => numeric.times(n, factor))))
   }
 
-  def divideRow(rowIndex: Int, denominator: A): Matrix[A] = {
-    require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
-    require(denominator != numeric.zero, s"Division by zero not allowed")
-
-    Matrix(rows.updated(rowIndex, rows(rowIndex).map(n => numeric.div(n, denominator))))
-  }
-
   def addOtherMultipliedRow(rowIndex: Int, otherRowIndex: Int, factor: A): Matrix[A] = {
     require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
     require(otherRowIndex >= 0 && otherRowIndex < rowCount, s"Row index $otherRowIndex out of bounds")
@@ -91,7 +84,7 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Fractional[A]) {
     Matrix(rows.updated(rowIndex, addRows(thisRowMultiplied, otherRowToAdd)))
   }
 
-  def map[B](f: A => B)(implicit num: Fractional[B]): Matrix[B] = {
+  def map[B](f: A => B)(implicit num: Numeric[B]): Matrix[B] = {
     Matrix(rows.map(row => row.map(f)))
   }
 
@@ -102,5 +95,22 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Fractional[A]) {
     row1.zip(row2).map { case (cell1, cell2) =>
       numeric.plus(cell1, cell2)
     }
+  }
+}
+
+object Matrix {
+
+  def divideRow(matrix: Matrix[Int], rowIndex: Int, denominator: Int): Matrix[Int] = {
+    require(rowIndex >= 0 && rowIndex < matrix.rowCount, s"Row index $rowIndex out of bounds")
+    require(denominator != 0, s"Division by zero not allowed")
+
+    Matrix(matrix.rows.updated(rowIndex, matrix.rows(rowIndex).map(n => n / denominator)))
+  }
+
+  def divideRow[A](matrix: Matrix[A], rowIndex: Int, denominator: A)(implicit numeric: Fractional[A]): Matrix[A] = {
+    require(rowIndex >= 0 && rowIndex < matrix.rowCount, s"Row index $rowIndex out of bounds")
+    require(denominator != numeric.zero, s"Division by zero not allowed")
+
+    Matrix(matrix.rows.updated(rowIndex, matrix.rows(rowIndex).map(n => numeric.div(n, denominator))))
   }
 }

@@ -31,17 +31,17 @@ object GaussianElimination {
    * In any case, this method tries to get as far as possible, and returns the last computed matrix. To check this
    * resulting matrix, call methods such as `isFoundToHaveExactlyOneSolution` etc.
    */
-  def computeGaussJordanEchelonForm[A](matrix: Matrix[A])(implicit numeric: Fractional[A]): Matrix[A] = {
+  def computeGaussJordanEchelonForm(matrix: Matrix[Int]): Matrix[Int] = {
     require(matrix.columnCount >= 1 + matrix.rowCount, s"Expected the column count to be at least 1 plus the row count")
 
     val countOfColumnsToProcess: Int = matrix.rowCount
 
-    val topDownResult: Matrix[A] =
+    val topDownResult: Matrix[Int] =
       (0 until countOfColumnsToProcess).foldLeft(matrix) { case (accMatrix, colIndex) =>
         accMatrix.pipe(m => processColumnTopDown(colIndex, m))
       }
 
-    val bottomUpResult: Matrix[A] =
+    val bottomUpResult: Matrix[Int] =
       ((countOfColumnsToProcess - 1) to 0 by -1).foldLeft(topDownResult) { case (accMatrix, colIndex) =>
         accMatrix.pipe(m => processColumnBottomUp(colIndex, m))
       }
@@ -49,21 +49,21 @@ object GaussianElimination {
     bottomUpResult.pipe(m => divideRows(m))
   }
 
-  def isFoundToHaveExactlyOneSolution[A](matrix: Matrix[A])(implicit numeric: Fractional[A]): Boolean = {
+  def isFoundToHaveExactlyOneSolution(matrix: Matrix[Int]): Boolean = {
     matrix.rows.forall { row =>
-      row.init.count(_ != numeric.zero) == 1
+      row.init.count(_ != 0) == 1 // TODO What if the solution would not be whole numbers only?
     }
   }
 
-  def isFoundToHaveNoSolutions[A](matrix: Matrix[A])(implicit numeric: Fractional[A]): Boolean = {
+  def isFoundToHaveNoSolutions(matrix: Matrix[Int]): Boolean = {
     matrix.rows.exists { row =>
-      row.init.forall(_ == numeric.zero) && row.last != numeric.zero
+      row.init.forall(_ == 0) && row.last != 0
     }
   }
 
-  def isFoundToHaveInfinitelyManySolutions[A](matrix: Matrix[A])(implicit numeric: Fractional[A]): Boolean = {
+  def isFoundToHaveInfinitelyManySolutions(matrix: Matrix[Int]): Boolean = {
     matrix.rows.exists { row =>
-      row.forall(_ == numeric.zero)
+      row.forall(_ == 0)
     } && !isFoundToHaveNoSolutions(matrix)
   }
 
@@ -71,15 +71,15 @@ object GaussianElimination {
    * Tries to change column colIndex in such a way with operation `Matrix.addOtherMultipliedRow` that the cells below
    * cell (colIndex, colIndex) become 0. If needed, rows are swapped.
    */
-  private def processColumnTopDown[A](colIndex: Int, matrix: Matrix[A])(implicit numeric: Fractional[A]): Matrix[A] = {
+  private def processColumnTopDown(colIndex: Int, matrix: Matrix[Int]): Matrix[Int] = {
     val zeroColumns = for (r <- colIndex.until(matrix.rowCount); c <- 0.until(colIndex)) yield matrix.cell(r, c)
     require(
-      zeroColumns.forall(_ == numeric.zero),
+      zeroColumns.forall(_ == 0),
       s"Expected only zeroes in columns under $colIndex in rows from $colIndex (both 0-based)")
 
-    val startMatrix: Matrix[A] =
-      if (matrix.cell(colIndex, colIndex) == numeric.zero) {
-        val rowToSwapWith = colIndex.until(matrix.rowCount).find(r => matrix.cell(r, colIndex) != numeric.zero).getOrElse(colIndex)
+    val startMatrix: Matrix[Int] =
+      if (matrix.cell(colIndex, colIndex) == 0) {
+        val rowToSwapWith = colIndex.until(matrix.rowCount).find(r => matrix.cell(r, colIndex) != 0).getOrElse(colIndex)
         matrix.swapRows(colIndex, rowToSwapWith)
       } else {
         matrix
@@ -90,7 +90,7 @@ object GaussianElimination {
 
     val startRowIndex = colIndex + 1
 
-    if (referenceCell == numeric.zero) {
+    if (referenceCell == 0) {
       startMatrix
     } else {
       // Try to get value 0 in cells (colIndex + 1, colIndex), (colIndex + 2, colIndex) etc.
@@ -98,11 +98,11 @@ object GaussianElimination {
       (startRowIndex until startMatrix.rowCount).foldLeft(startMatrix) { case (accMatrix, currRowIndex) =>
         // Process row currRowIndex
 
-        if (accMatrix.cell(currRowIndex, colIndex) == numeric.zero) {
+        if (accMatrix.cell(currRowIndex, colIndex) == 0) {
           accMatrix
         } else {
           val factor1 = accMatrix.cell(referenceRowIndex, colIndex)
-          val factor2 = numeric.negate(accMatrix.cell(currRowIndex, colIndex))
+          val factor2 = -accMatrix.cell(currRowIndex, colIndex)
 
           accMatrix.addOtherRowMultiplyingBoth(currRowIndex, referenceRowIndex, factor1, factor2)
         }
@@ -116,15 +116,15 @@ object GaussianElimination {
    * which makes row swapping no longer feasible without breaking the elimination process. If this workflow does not proceed
    * "normally", the resulting matrix at that point is returned.
    */
-  private def processColumnBottomUp[A](colIndex: Int, matrix: Matrix[A])(implicit numeric: Fractional[A]): Matrix[A] = {
-    val startMatrix: Matrix[A] = matrix
+  private def processColumnBottomUp(colIndex: Int, matrix: Matrix[Int]): Matrix[Int] = {
+    val startMatrix: Matrix[Int] = matrix
 
     val referenceRowIndex = colIndex
     val referenceCell = startMatrix.cell(referenceRowIndex, colIndex)
 
     val startRowIndex = colIndex - 1
 
-    if (referenceCell == numeric.zero) {
+    if (referenceCell == 0) {
       startMatrix
     } else {
       // Try to get value 0 in cells (rowCount - 1, colIndex), (rowCount - 2, colIndex) etc.
@@ -132,11 +132,11 @@ object GaussianElimination {
       (startRowIndex to 0 by -1).foldLeft(startMatrix) { case (accMatrix, currRowIndex) =>
         // Process row currRowIndex
 
-        if (accMatrix.cell(currRowIndex, colIndex) == numeric.zero) {
+        if (accMatrix.cell(currRowIndex, colIndex) == 0) {
           accMatrix
         } else {
           val factor1 = accMatrix.cell(referenceRowIndex, colIndex)
-          val factor2 = numeric.negate(accMatrix.cell(currRowIndex, colIndex))
+          val factor2 = -accMatrix.cell(currRowIndex, colIndex)
 
           accMatrix.addOtherRowMultiplyingBoth(currRowIndex, referenceRowIndex, factor1, factor2)
         }
@@ -144,15 +144,33 @@ object GaussianElimination {
     }
   }
 
-  private def divideRows[A](matrix: Matrix[A])(implicit numeric: Fractional[A]): Matrix[A] = {
+  private def divideRows(matrix: Matrix[Int]): Matrix[Int] = {
     (0 until matrix.rowCount).foldLeft(matrix) { case (accMatrix, idx) =>
-      val denominator = accMatrix.cell(idx, idx)
+      val denominatorOption = gcdOption(accMatrix.rows(idx).filter(_ != 0))
 
-      if (denominator == numeric.zero) {
-        matrix
+      denominatorOption.map { denominator =>
+        if (denominator == 0) {
+          matrix
+        } else {
+          Matrix.divideRow(accMatrix, idx, denominator)
+        }
+      }.getOrElse(matrix)
+    }
+  }
+
+  private def gcdOption(xs: Seq[Int]): Option[Int] = {
+    if (xs.isEmpty) {
+      None
+    } else {
+      if (xs.sizeIs <= 2) {
+        if (xs.size == 1) Some(xs.head) else Some(gcd(xs(0), xs(1)))
       } else {
-        accMatrix.divideRow(idx, denominator)
+        gcdOption(xs.tail).map(n => gcd(xs.head, n)) // Recursive call
       }
     }
+  }
+
+  private def gcd(x: Int, y: Int): Int = {
+    if (y == 0) x else gcd(y, x % y) // Recursive call
   }
 }

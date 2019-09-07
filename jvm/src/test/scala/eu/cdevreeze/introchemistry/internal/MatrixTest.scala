@@ -80,7 +80,7 @@ class MatrixTest extends AnyFunSuite {
       Seq(BigDecimal(0), BigDecimal(3), BigDecimal(-2), BigDecimal(-5))
     ))
 
-    val result = matrix.divideRow(2, BigDecimal(1) / 15)
+    val result = Matrix.divideRow(matrix, 2, BigDecimal(1) / 15)
 
     val expectedResult = Matrix(Seq(
       Seq(BigDecimal(2), BigDecimal(-2), BigDecimal(0), BigDecimal(-6)),
@@ -127,8 +127,8 @@ class MatrixTest extends AnyFunSuite {
       .swapRows(1, 2).tap(r => results = results.appended(r))
       .addOtherMultipliedRow(1, 2, BigDecimal(2)).tap(r => results = results.appended(r))
       .addOtherMultipliedRow(0, 1, BigDecimal(2) / 3).tap(r => results = results.appended(r))
-      .divideRow(0, BigDecimal(2)).tap(r => results = results.appended(r))
-      .divideRow(1, BigDecimal(3)).tap(r => results = results.appended(r))
+      .pipe(m => Matrix.divideRow(m, 0, BigDecimal(2))).tap(r => results = results.appended(r))
+      .pipe(m => Matrix.divideRow(m, 1, BigDecimal(3))).tap(r => results = results.appended(r))
 
     val expectedResults = Seq(
       Matrix(Seq(
