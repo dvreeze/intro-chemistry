@@ -80,6 +80,8 @@ object ChemicalEquation {
 
       s"$quantity ${formula.show} $phaseString".trim
     }
+
+    def withQuantity(newQuantity: Int): FormulaQuantity = this.copy(quantity = newQuantity)
   }
 
   def apply(s: String): ChemicalEquation = parse(s)

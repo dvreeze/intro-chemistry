@@ -97,6 +97,16 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
    */
   def diatomicElements: Set[ElementSymbol] = ElementSymbol.diatomicElements
 
+  // Balancing chemical equations
+
+  /**
+   * Tries to balance the given (probably unbalanced) chemical equation, returning the optional balanced result if
+   * successful.
+   */
+  def tryToBalanceChemicalEquation(equation: ChemicalEquation): Option[ChemicalEquation] = {
+    StoichiometrySupport(periodicTable).tryToBalanceChemicalEquation(equation)
+  }
+
   // Conversions from strings to formulas or chemical equations
 
   /**
@@ -122,4 +132,5 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
 
     def ce: ChemicalEquation = ChemicalEquation(chemicalEquationString)
   }
+
 }

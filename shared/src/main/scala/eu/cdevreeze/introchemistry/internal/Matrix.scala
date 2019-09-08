@@ -65,12 +65,7 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Numeric[A]) {
   }
 
   def addOtherMultipliedRow(rowIndex: Int, otherRowIndex: Int, factor: A): Matrix[A] = {
-    require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
-    require(otherRowIndex >= 0 && otherRowIndex < rowCount, s"Row index $otherRowIndex out of bounds")
-    require(otherRowIndex != rowIndex, s"The same 2 row indices are not allowed")
-
-    val otherRowToAdd = rows(otherRowIndex).map(n => numeric.times(n, factor))
-    Matrix(rows.updated(rowIndex, addRows(rows(rowIndex), otherRowToAdd)))
+    addOtherRowMultiplyingBoth(rowIndex, otherRowIndex, numeric.one, factor)
   }
 
   def addOtherRowMultiplyingBoth(rowIndex: Int, otherRowIndex: Int, factorForThisRow: A, factorForOtherRow: A): Matrix[A] = {
@@ -85,7 +80,11 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Numeric[A]) {
   }
 
   def map[B](f: A => B)(implicit num: Numeric[B]): Matrix[B] = {
-    Matrix(rows.map(row => row.map(f)))
+    mapRows(_.map(f))
+  }
+
+  def mapRows[B](f: Seq[A] => Seq[B])(implicit num: Numeric[B]): Matrix[B] = {
+    Matrix(rows.map(f))
   }
 
   private def addRows(row1: Seq[A], row2: Seq[A]): Seq[A] = {
@@ -100,7 +99,7 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Numeric[A]) {
 
 object Matrix {
 
-  def divideRow(matrix: Matrix[Int], rowIndex: Int, denominator: Int): Matrix[Int] = {
+  def divideRow(matrix: Matrix[Long], rowIndex: Int, denominator: Long): Matrix[Long] = {
     require(rowIndex >= 0 && rowIndex < matrix.rowCount, s"Row index $rowIndex out of bounds")
     require(denominator != 0, s"Division by zero not allowed")
 
