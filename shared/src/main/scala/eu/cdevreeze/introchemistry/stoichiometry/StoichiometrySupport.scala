@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.stoichiometry
 
+import scala.util.Try
+
 import eu.cdevreeze.introchemistry.internal.GaussianElimination
 import eu.cdevreeze.introchemistry.internal.Matrix
 import eu.cdevreeze.introchemistry.periodictable.Element
@@ -93,22 +95,25 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
     val resultMatrix = GaussianElimination.tryToBalanceEquations(matrix, maxParValue)
 
     val resultEquationOption: Option[ChemicalEquation] =
-      if (GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(resultMatrix)) {
-        val quantities: Seq[Int] = resultMatrix.map(_.toInt).rows.sortBy(_.takeWhile(_ == 0).size).map { row =>
-          val coefficient = row.init.find(_ != 0).ensuring(_.nonEmpty).get
-          require(row.last % coefficient == 0, s"${row.last} not divisable by $coefficient")
-          (row.last / coefficient).ensuring(_ > 0)
-        }
+      Try {
+        if (GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(resultMatrix)) {
+          val quantities: Seq[Int] = resultMatrix.map(_.toInt).rows.sortBy(_.takeWhile(_ == 0).size).map { row =>
+            val coefficient = row.init.find(_ != 0).ensuring(_.nonEmpty).get
+            require(row.last % coefficient == 0, s"${row.last} not divisable by $coefficient")
+            (row.last / coefficient).ensuring(_ > 0)
+          }
 
-        val reactantsAndProducts = equation.reactantsAndProducts.zip(quantities).map { case (reactantOrProduct, quantity) =>
-          reactantOrProduct.withQuantity(quantity)
+          val reactantsAndProducts = equation.reactantsAndProducts.zip(quantities).map { case (reactantOrProduct, quantity) =>
+            reactantOrProduct.withQuantity(quantity)
+          }.ensuring(_.size == equation.reactantsAndProducts.size)
+
+          Some(ChemicalEquation(
+            reactantsAndProducts.take(equation.reactants.size),
+            reactantsAndProducts.drop(equation.reactants.size)))
+        } else {
+          None
         }
-        Some(ChemicalEquation(
-          reactantsAndProducts.take(equation.reactants.size),
-          reactantsAndProducts.drop(equation.reactants.size)))
-      } else {
-        None
-      }
+      }.toOption.flatten
 
     resultEquationOption.filter(_.isBalanced)
   }
