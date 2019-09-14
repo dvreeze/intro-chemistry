@@ -45,7 +45,7 @@ final case class QuantumNumberSet(
   principalQuantumNumber: Int,
   angularMomentumQuantumNumber: Int,
   magneticQuantumNumber: Int,
-  spinQuantumNumber: QuantumNumberSet.Spin
+  spinQuantumNumber: Spin
 ) {
 
   require(
@@ -100,17 +100,4 @@ object QuantumNumberSet {
         }
     }
   }
-
-  sealed trait Spin {
-    def value: BigDecimal
-  }
-
-  object PositiveSpin extends Spin {
-    def value: BigDecimal = BigDecimal(1) / BigDecimal(2)
-  }
-
-  object NegativeSpin extends Spin {
-    def value: BigDecimal = -PositiveSpin.value
-  }
-
 }
