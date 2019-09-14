@@ -24,7 +24,7 @@ package eu.cdevreeze.introchemistry.orbitals
  * states that no 2 electrons in the same atom can have the same sets of 4 quantum numbers. Hence at most 2 electrons can
  * occupy the same orbital (see below), and these 2 electrons must have different spin quantum number.
  *
- * The principal quantum number determines the distance of the electron from the nucleus. Hence it determines the energy
+ * The principal quantum number determines the (average) distance of the electron from the nucleus. Hence it determines the energy
  * of the electron (to a large extent) and the size of the orbital. All orbitals with the same principal quantum number are
  * said to be in the same shell.
  *

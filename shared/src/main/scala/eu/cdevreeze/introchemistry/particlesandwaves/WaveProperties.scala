@@ -89,6 +89,14 @@ object WaveProperties {
     planckConstant / (mass * BigDecimal("1e-3")  * speed)
   }
 
+  /**
+   * Given the level, or shell (or principal quantum number), of an electron in a hydrogen atom, returns the energy
+   * of that electron in Joule. It is the negated Rydberg constant for hydrogen divided by the square of the level.
+   */
+  def getEnergyOfElectronInHydrogen(level: Int): BigDecimal = {
+    -rydbergConstantForHydrogen / (level * level)
+  }
+
   val visibleLightSpectrumInMeters: (BigDecimal, BigDecimal) = (BigDecimal("380e-9"), BigDecimal("700e-9"))
 
   /**
@@ -100,4 +108,9 @@ object WaveProperties {
    * Planck constant, in Joule times seconds. Note that Joule is (kg * m * m / (s * s)).
    */
   val planckConstant: BigDecimal = BigDecimal("6.62607004e-34")
+
+  /**
+   * The Rydberg constant for hydrogen, in Joule.
+   */
+  val rydbergConstantForHydrogen: BigDecimal = BigDecimal("2.18e-18")
 }

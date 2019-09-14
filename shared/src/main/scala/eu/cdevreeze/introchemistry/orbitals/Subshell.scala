@@ -17,7 +17,9 @@
 package eu.cdevreeze.introchemistry.orbitals
 
 /**
- * Subshell, which is identified by a letter.
+ * Subshell, which is identified by a letter. Note the a subshell (when taken as an absolute value) should also imply
+ * the shell (or level, or principal quantum number), but here the subshell is used as a relative notion, relative to
+ * the shell (whichever shell it is).
  *
  * @author Chris de Vreeze
  */
@@ -56,14 +58,8 @@ object Subshell {
 
   val values: Seq[Subshell] = Seq(S, P, D, F, G, H)
 
-  def parse(s: String): Subshell = s.toUpperCase match {
-    case "S" => S
-    case "P" => P
-    case "D" => D
-    case "F" => F
-    case "G" => G
-    case "H" => H
-    case _ => sys.error(s"Not a subshell: $s")
+  def parse(s: String): Subshell = {
+    values.find(_.name == s.toLowerCase).getOrElse(sys.error(s"Not a subshell: $s"))
   }
 
   def fromSublevel(sublevel: Int): Subshell = {
