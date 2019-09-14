@@ -38,14 +38,14 @@ object WaveProperties {
   /**
    * Given the wave length in meter and the speed in meter per second, returns the frequency in Herz.
    */
-  def convertToFrequency(waveLength: BigDecimal, speed: BigDecimal): BigDecimal = {
+  def convertWaveLengthToFrequency(waveLength: BigDecimal, speed: BigDecimal): BigDecimal = {
     speed / waveLength
   }
 
   /**
    * Given the frequency in Herz and the speed in meter per second, returns the wave length in meter.
    */
-  def convertToWaveLength(frequency: BigDecimal, speed: BigDecimal): BigDecimal = {
+  def convertFrequencyToWaveLength(frequency: BigDecimal, speed: BigDecimal): BigDecimal = {
     speed / frequency
   }
 
@@ -54,15 +54,15 @@ object WaveProperties {
   /**
    * Given the wave length in meter (and the implicit speed of light in meter per second), returns the frequency in Herz.
    */
-  def convertToFrequency(waveLength: BigDecimal): BigDecimal = {
-    convertToFrequency(waveLength, speedOfLightInMeterPerSecond)
+  def convertWaveLengthToFrequency(waveLength: BigDecimal): BigDecimal = {
+    convertWaveLengthToFrequency(waveLength, speedOfLightInMeterPerSecond)
   }
 
   /**
    * Given the frequency in Herz (and the implicit speed of light in meter per second), returns the wave length in meter.
    */
-  def convertToWaveLength(frequency: BigDecimal): BigDecimal = {
-    convertToWaveLength(frequency, speedOfLightInMeterPerSecond)
+  def convertFrequencyToWaveLength(frequency: BigDecimal): BigDecimal = {
+    convertFrequencyToWaveLength(frequency, speedOfLightInMeterPerSecond)
   }
 
   /**
