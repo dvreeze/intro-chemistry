@@ -81,6 +81,14 @@ object WaveProperties {
     photonEnergy / planckConstant
   }
 
+  /**
+   * Given a mass in gram and a speed in meter per second, computes the "de Broglie" wave length in meter.
+   * It is the Planck constant divided by the product of mass (converted to kg) and speed. Note that the units are correct in this equation.
+   */
+  def getDeBroglieWaveLength(mass: BigDecimal, speed: BigDecimal): BigDecimal = {
+    planckConstant / (mass * BigDecimal("1e-3")  * speed)
+  }
+
   val visibleLightSpectrumInMeters: (BigDecimal, BigDecimal) = (BigDecimal("380e-9"), BigDecimal("700e-9"))
 
   /**
@@ -89,7 +97,7 @@ object WaveProperties {
   val speedOfLightInMeterPerSecond: BigDecimal = BigDecimal(299792458L)
 
   /**
-   * Planck constant, in Joule times seconds.
+   * Planck constant, in Joule times seconds. Note that Joule is (kg * m * m / (s * s)).
    */
   val planckConstant: BigDecimal = BigDecimal("6.62607004e-34")
 }
