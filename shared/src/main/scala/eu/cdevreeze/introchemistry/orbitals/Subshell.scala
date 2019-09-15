@@ -28,6 +28,10 @@ sealed trait Subshell {
   def sublevel: Int
 
   final def name: String = toString.toLowerCase
+
+  final def maxOrbitalCount: Int = 1 + 2 * sublevel
+
+  final def maxElectronCount: Int = 2 * maxOrbitalCount
 }
 
 object Subshell {
