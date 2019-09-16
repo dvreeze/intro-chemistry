@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.orbitals
 
+import scala.util.Try
+
 import eu.cdevreeze.introchemistry.orbitals.ElectronConfig.SubshellConfig
 import eu.cdevreeze.introchemistry.periodictable.ChemicalGroupBlock
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
@@ -30,6 +32,10 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
 
   def isAbsolute: Boolean = previousNobleGasOption.isEmpty
 
+  /**
+   * Returns the electron count relative to the optional previous noble gas. If no previous noble gas is given, the absolute
+   * electron count is returned.
+   */
   def relativeElectronCount: Int = subshellConfigs.map(_.electronCount).sum
 
   def show: String = {
@@ -39,6 +45,35 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
 }
 
 object ElectronConfig {
+
+  def parse(s: String): ElectronConfig = {
+    val previousNobleGasOption: Option[ElementSymbol] =
+      if (s.startsWith("[")) {
+        val idx = s.indexOf(']')
+        require(idx > 0, s"Syntax error in 'electron config' $s")
+        Some(ElementSymbol.parse(s.substring(1, idx)))
+      } else {
+        None
+      }
+
+    val remainder: String = if (s.startsWith("[")) s.substring(s.indexOf("]") + 1) else s
+    val subshellConfigs = parseSubshellConfigs(remainder)
+
+    ElectronConfig(previousNobleGasOption, subshellConfigs)
+  }
+
+  private def parseSubshellConfigs(s: String): Seq[SubshellConfig] = {
+    if (s.isEmpty) {
+      Seq.empty
+    } else {
+      require(s.startsWith("("), s"Syntax error in 'electron config' $s")
+      val idx = s.indexOf(")")
+      require(idx > 0, s"Syntax error in 'electron config' $s")
+
+      // Recursive call
+      parseSubshellConfigs(s.substring(idx + 1)).prepended(SubshellConfig.parse(s.substring(0, idx + 1)))
+    }
+  }
 
   /**
    * Subshell configuration. It contains a level, subshell and electron count. The level, or shell, corresponds to the
@@ -64,4 +99,20 @@ object ElectronConfig {
 
     def show: String = s"($level${subshell.name}$electronCount)"
   }
+
+  object SubshellConfig {
+
+    def parse(s: String): SubshellConfig = {
+      require(s.startsWith("(") && s.endsWith(")") && s.length >= 5, s"Expected format like so: (2p5), but got $s")
+
+      val content = s.drop(1).dropRight(1)
+      val level: Int = Try(content.takeWhile(c => Character.isDigit(c)).toInt).getOrElse(sys.error(s"No level found in $s"))
+      val contentWithoutLevel = content.dropWhile(c => Character.isDigit(c))
+      val subshell = Subshell.parse(contentWithoutLevel.take(1))
+      val electronCount = Try(contentWithoutLevel.drop(1).toInt).getOrElse(sys.error(s"No electron count found in $s"))
+
+      SubshellConfig(level, subshell, electronCount)
+    }
+  }
+
 }
