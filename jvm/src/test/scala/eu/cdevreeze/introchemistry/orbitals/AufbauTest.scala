@@ -96,4 +96,14 @@ class AufbauTest extends AnyFunSuite {
       AufbauPrinciple.getProbableElectronConfig(Og)
     }
   }
+
+  test("testProtonAndElectronCountsMatch") {
+    import AufbauPrinciple._
+
+    val elementAtomicNumbers: Map[ElementSymbol, Int] = ElementSymbol.allElements.map(elem => elem -> elem.atomicNumber).toMap
+
+    assertResult(elementAtomicNumbers) {
+      ElementSymbol.allElements.map(elem => elem -> getElectronCount(getProbableAbsoluteElectronConfig(elem))).toMap
+    }
+  }
 }

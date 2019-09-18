@@ -194,7 +194,7 @@ object AufbauPrinciple {
       ElectronConfig.parse("[Rn](7s2)(5f14)(6d10)(7p4)"),
       ElectronConfig.parse("[Rn](7s2)(5f14)(6d10)(7p5)"),
       ElectronConfig.parse("[Rn](7s2)(5f14)(6d10)(7p6)"),
-    )
+    ).ensuring(_.size == ElementSymbol.allElements.size)
   }
 
   private val electronConfigMap: Map[Int, ElectronConfig] = {

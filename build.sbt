@@ -8,7 +8,7 @@
 
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-val scalaVer = "2.13.0"
+val scalaVer = "2.13.1"
 
 val crossScalaVer = Seq(scalaVer)
 
@@ -67,7 +67,7 @@ lazy val introchemistry = crossProject(JSPlatform, JVMPlatform)
     // Do we need this jsEnv?
     jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
 
-    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.6",
+    libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7",
 
     Test / parallelExecution := false
   )
