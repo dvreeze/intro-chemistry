@@ -97,6 +97,48 @@ class AufbauTest extends AnyFunSuite {
     }
   }
 
+  test("testElectronConfigOfNiIon") {
+    assertResult(ElectronConfig.parse("[Ar](4s2)(3d8)")) {
+      AufbauPrinciple.getProbableElectronConfig(Ni)
+    }
+
+    assertResult(ElectronConfig.parse("[Ar](3d8)")) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Ni, +2)
+    }
+  }
+
+  test("testElectronConfigOfSnIon") {
+    assertResult(ElectronConfig.parse("[Kr](5s2)(4d10)(5p2)")) {
+      AufbauPrinciple.getProbableElectronConfig(Sn)
+    }
+
+    assertResult(ElectronConfig.parse("[Kr](5s1)(4d10)")) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Sn, +3)
+    }
+  }
+
+  test("testIonsIsoElectronicWithAr") {
+    assertResult(ElectronConfig.parse("[Ne](3s2)(3p6)")) {
+      AufbauPrinciple.getProbableElectronConfig(Ar)
+    }
+
+    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(Ca, +2)
+    }
+
+    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(K, +1)
+    }
+
+    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(Cl, -1)
+    }
+
+    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(S, -2)
+    }
+  }
+
   test("testProtonAndElectronCountsMatch") {
     import AufbauPrinciple._
 

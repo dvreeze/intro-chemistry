@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.orbitals
 
+import scala.annotation.tailrec
+
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
@@ -45,6 +47,24 @@ object AufbauPrinciple {
     }
   }
 
+  def getProbableElectronConfigOfIon(element: ElementSymbol, charge: Int): ElectronConfig = {
+    require(charge != 0, s"Not an ion: $element with charge 0")
+
+    if (charge < 0) {
+      getProbableElectronConfigByAtomicNumber(element.atomicNumber + charge.abs)
+    } else {
+      assert(charge > 0)
+
+      1.to(charge).foldLeft(getProbableElectronConfig(element)) { case (accElectronConfig, _) =>
+        removeElectron(accElectronConfig)
+      }
+    }
+  }
+
+  def getProbableAbsoluteElectronConfigOfIon(element: ElementSymbol, charge: Int): ElectronConfig = {
+    getProbableAbsoluteElectronConfig(getProbableElectronConfigOfIon(element, charge))
+  }
+
   def getProbableAbsoluteElectronConfig(electronConfig: ElectronConfig): ElectronConfig = {
     if (electronConfig.previousNobleGasOption.isEmpty) {
       electronConfig
@@ -59,6 +79,27 @@ object AufbauPrinciple {
 
   def getElectronCount(electronConfig: ElectronConfig): Int = {
     getProbableAbsoluteElectronConfig(electronConfig).ensuring(_.previousNobleGasOption.isEmpty).relativeElectronCount
+  }
+
+  @tailrec
+  def removeElectron(electronConfig: ElectronConfig): ElectronConfig = {
+    if (electronConfig.subshellConfigs.isEmpty) {
+      assert(electronConfig.previousNobleGasOption.nonEmpty)
+
+      // Recursive call
+      removeElectron(
+        getProbableElectronConfig(electronConfig.previousNobleGasOption.get).ensuring(_.subshellConfigs.nonEmpty))
+    } else {
+      val maxLevel: Int = electronConfig.subshellConfigs.map(_.level).max
+      val targetSubshellConfig: ElectronConfig.SubshellConfig =
+        electronConfig.subshellConfigs.filter(_.level == maxLevel).sortBy(_.subshell.sublevel).last
+
+      if (targetSubshellConfig.electronCount == 1) {
+        electronConfig.minus(targetSubshellConfig)
+      } else {
+        electronConfig.map(cfg => if (cfg == targetSubshellConfig) cfg.minusElectron else cfg)
+      }
+    }
   }
 
   val nobleGasElectronConfigs: Map[ElementSymbol, ElectronConfig] = {

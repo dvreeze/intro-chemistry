@@ -29,6 +29,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  */
 final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], subshellConfigs: Seq[SubshellConfig]) {
   require(previousNobleGasOption.forall(_.chemicalGroup == ChemicalGroupBlock.NobleGas), s"Not a noble gas: ${previousNobleGasOption.get}")
+  require(previousNobleGasOption.nonEmpty || subshellConfigs.nonEmpty, s"Empty electron config not allowed")
 
   def isAbsolute: Boolean = previousNobleGasOption.isEmpty
 
@@ -41,6 +42,14 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
   def show: String = {
     val nobleGasString = previousNobleGasOption.map(elm => s"[$elm]").getOrElse("")
     s"$nobleGasString${subshellConfigs.map(_.show).mkString}"
+  }
+
+  def minus(subshellConfig: SubshellConfig): ElectronConfig = {
+    ElectronConfig(previousNobleGasOption, subshellConfigs.filterNot(Set(subshellConfig)))
+  }
+
+  def map(f: SubshellConfig => SubshellConfig): ElectronConfig = {
+    ElectronConfig(previousNobleGasOption, subshellConfigs.map(f))
   }
 }
 
@@ -98,6 +107,12 @@ object ElectronConfig {
       s"The electron count must be at most ${subshell.maxElectronCount}, but got $electronCount instead")
 
     def show: String = s"($level${subshell.name}$electronCount)"
+
+    def minusElectron: SubshellConfig = {
+      require(electronCount > 1, s"Electron count is $electronCount, so cannot remove electron")
+
+      this.copy(electronCount = this.electronCount - 1)
+    }
   }
 
   object SubshellConfig {
