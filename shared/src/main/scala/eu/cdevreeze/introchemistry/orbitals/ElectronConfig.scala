@@ -25,6 +25,25 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 /**
  * Electron configuration, either absolute or relative to a previous noble gas in the periodic table.
  *
+ * Atomic readii decrease within a period from left to right, because on the one hand the number of protons increases,
+ * and on the other hand the added electrons are in the same energy level (so electron shielding decreases). The net result
+ * is that electrons are pulled closer to the nucleus, thus reducing the atom radius.
+ *
+ * Atomic radii increase when going down in the same column in the periodic table, because an energy level is added. So
+ * relatively there are more core electrons than valence electrons, thus increasing electron shielding, and therefore
+ * increasing the atom radius.
+ *
+ * When a neutral atom loses electrons and becomes a cation, the atom decreases in size. The reason is that electron-electron
+ * repulsion decreases and therefore shielding decreases, resulting in the remaining electrons being pulled closer to the
+ * nucleus.
+ *
+ * When a neutral atom gains electrons and becomes an anion, the atom increases in size. The reason is that electron-electron
+ * repulsion and therefore shielding increases, pushing the electrons further apart. Also, the electrons outnumber the protons,
+ * thus the extra electrons are not pulled as tightly to the nucleus. Hence the increased atom size.
+ *
+ * Hence, the lower the charge, the bigger the atom becomes. See for example
+ * https://chem.libretexts.org/Bookshelves/Inorganic_Chemistry/Supplemental_Modules_(Inorganic_Chemistry)/Descriptive_Chemistry/Periodic_Trends_of_Elemental_Properties/Periodic_Trends_in_Ionic_Radii.
+ *
  * @author Chris de Vreeze
  */
 final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], subshellConfigs: Seq[SubshellConfig]) {
