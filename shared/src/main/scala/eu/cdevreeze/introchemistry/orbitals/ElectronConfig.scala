@@ -25,7 +25,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 /**
  * Electron configuration, either absolute or relative to a previous noble gas in the periodic table.
  *
- * Atomic readii decrease within a period from left to right, because on the one hand the number of protons increases,
+ * Atomic radii decrease within a period from left to right, because on the one hand the number of protons increases,
  * and on the other hand the added electrons are in the same energy level (so electron shielding decreases). The net result
  * is that electrons are pulled closer to the nucleus, thus reducing the atom radius.
  *
