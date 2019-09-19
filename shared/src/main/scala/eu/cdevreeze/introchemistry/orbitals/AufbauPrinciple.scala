@@ -17,6 +17,7 @@
 package eu.cdevreeze.introchemistry.orbitals
 
 import scala.annotation.tailrec
+import scala.util.chaining._
 
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
@@ -57,7 +58,7 @@ object AufbauPrinciple {
 
       1.to(charge).foldLeft(getProbableElectronConfig(element)) { case (accElectronConfig, _) =>
         removeElectron(accElectronConfig)
-      }
+      }.pipe(cfg => if (cfg.subshellConfigs.isEmpty) getProbableElectronConfig(cfg.previousNobleGasOption.get) else cfg)
     }
   }
 
@@ -79,6 +80,10 @@ object AufbauPrinciple {
 
   def getElectronCount(electronConfig: ElectronConfig): Int = {
     getProbableAbsoluteElectronConfig(electronConfig).ensuring(_.previousNobleGasOption.isEmpty).relativeElectronCount
+  }
+
+  def getElectronCount(element: ElementSymbol): Int = {
+    getElectronCount(getProbableElectronConfig(element))
   }
 
   @tailrec

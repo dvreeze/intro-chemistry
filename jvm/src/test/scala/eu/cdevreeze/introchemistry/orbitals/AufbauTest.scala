@@ -117,25 +117,71 @@ class AufbauTest extends AnyFunSuite {
     }
   }
 
+  test("testElectronConfigOfFeIon") {
+    assertResult(ElectronConfig.parse("[Ar](4s2)(3d6)")) {
+      AufbauPrinciple.getProbableElectronConfig(Fe)
+    }
+
+    assertResult(ElectronConfig.parse("[Ar](3d5)")) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Fe, +3)
+    }
+  }
+
+  test("testIsoElectronicFAndOIons") {
+    assertResult(AufbauPrinciple.getProbableElectronConfig(Ne)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(F, -1)
+    }
+
+    assertResult(AufbauPrinciple.getProbableElectronConfigOfIon(F, -1)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(O, -2)
+    }
+
+    assertResult(AufbauPrinciple.getProbableElectronConfigOfIon(F, -1)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Na, +1)
+    }
+
+    assertResult(AufbauPrinciple.getProbableElectronConfigOfIon(F, -1)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Mg, +2)
+    }
+  }
+
+  test("testNotIsoElectronic") {
+    assertResult(V.atomicNumber) {
+      AufbauPrinciple.getElectronCount(V)
+    }
+
+    assertResult(V.atomicNumber) {
+      AufbauPrinciple.getElectronCount(AufbauPrinciple.getProbableElectronConfigOfIon(Fe, +3))
+    }
+
+    assertResult(ElectronConfig.parse("[Ar](3d5)")) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Fe, +3)
+    }
+
+    assertResult(false) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Fe, +3) == AufbauPrinciple.getProbableElectronConfig(V)
+    }
+  }
+
   test("testIonsIsoElectronicWithAr") {
     assertResult(ElectronConfig.parse("[Ne](3s2)(3p6)")) {
       AufbauPrinciple.getProbableElectronConfig(Ar)
     }
 
-    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
-      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(Ca, +2)
+    assertResult(AufbauPrinciple.getProbableElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Ca, +2)
     }
 
-    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
-      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(K, +1)
+    assertResult(AufbauPrinciple.getProbableElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(K, +1)
     }
 
-    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
-      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(Cl, -1)
+    assertResult(AufbauPrinciple.getProbableElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(Cl, -1)
     }
 
-    assertResult(AufbauPrinciple.getProbableAbsoluteElectronConfig(Ar)) {
-      AufbauPrinciple.getProbableAbsoluteElectronConfigOfIon(S, -2)
+    assertResult(AufbauPrinciple.getProbableElectronConfig(Ar)) {
+      AufbauPrinciple.getProbableElectronConfigOfIon(S, -2)
     }
   }
 
@@ -145,7 +191,7 @@ class AufbauTest extends AnyFunSuite {
     val elementAtomicNumbers: Map[ElementSymbol, Int] = ElementSymbol.allElements.map(elem => elem -> elem.atomicNumber).toMap
 
     assertResult(elementAtomicNumbers) {
-      ElementSymbol.allElements.map(elem => elem -> getElectronCount(getProbableAbsoluteElectronConfig(elem))).toMap
+      ElementSymbol.allElements.map(elem => elem -> getElectronCount(elem)).toMap
     }
   }
 }
