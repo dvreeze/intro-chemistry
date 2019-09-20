@@ -44,6 +44,26 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * Hence, the lower the charge, the bigger the atom becomes. See for example
  * https://chem.libretexts.org/Bookshelves/Inorganic_Chemistry/Supplemental_Modules_(Inorganic_Chemistry)/Descriptive_Chemistry/Periodic_Trends_of_Elemental_Properties/Periodic_Trends_in_Ionic_Radii.
  *
+ * Ionization energy is the minimum energy required to remove an electron from a gaseous atom in its ground state.
+ * It tends to increase from the lower left corner of the periodic table to the upper right corner, especially for the so-called
+ * representative elements. Why? From left to right the atoms become smaller and the force pulling (valence) electrons to the nucleus
+ * becomes larger. From bottom to top the same is true. So, roughly, the smaller the atom, the bigger the ionization energy.
+ *
+ * Exceptions to this trend occur when sub-shells become full or half-full. Remember: atoms "try to become" noble gases or
+ * otherwise "try to have" half-full sub-shells. Those electron configurations are the most stable ones.
+ *
+ * The first ionization energy (for the first electron to remove) is for every atom smaller than the second ionization energy, and so on,
+ * if only because the relative proton count (compared with the electron count) becomes larger, pulling electrons harder to the
+ * nucleus. Large increases in ionization energy occur when shells become empty.
+ *
+ * When an electron is accepted by an atom in the gaseous state to become an anion, an energy change occurs (and this energy
+ * change is often negative). The negative of this energy change is called the electron affinity. So, when the energy change
+ * is negative, the electron affinity is positive. Metals typically have lower electron affinity than non-metals. This makes sense,
+ * because from the electron configurations it follows that metals (especially the representative metal elements) rather lose
+ * than gain electrons to become stable (more like noble gases in their electron configuration). Note that noble gases "have no
+ * electron affinity". The trend of electron affinity somewhat resembles that of the trend of ionization energy in the periodic table,
+ * but a closer look at the electron configuration reveals more.
+ *
  * @author Chris de Vreeze
  */
 final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], subshellConfigs: Seq[SubshellConfig]) {
