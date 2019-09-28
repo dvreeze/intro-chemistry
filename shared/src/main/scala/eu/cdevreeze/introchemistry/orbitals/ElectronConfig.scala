@@ -50,7 +50,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * becomes larger. From bottom to top the same is true. So, roughly, the smaller the atom, the bigger the ionization energy.
  *
  * Exceptions to this trend occur when sub-shells become full or half-full. Remember: atoms "try to become" noble gases or
- * otherwise "try to have" half-full sub-shells. Those electron configurations are the most stable ones.
+ * otherwise "try to have" full or half-full sub-shells. Those electron configurations are the most stable ones.
  *
  * The first ionization energy (for the first electron to remove) is for every atom smaller than the second ionization energy, and so on,
  * if only because the relative proton count (compared with the electron count) becomes larger, pulling electrons harder to the

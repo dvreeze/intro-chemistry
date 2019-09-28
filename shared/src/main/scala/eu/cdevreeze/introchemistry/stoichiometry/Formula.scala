@@ -34,6 +34,17 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * and https://www.wisegeek.com/what-is-a-formula-unit.htm. See also
  * https://www.khanacademy.org/science/chemistry/atomic-structure-and-properties/introduction-to-compounds/a/paul-article-2.
  *
+ * Note that in chemistry the distinction between molecular compounds (also known as covalent compounds) and ionic compounds
+ * is very important, but not visible in formulas. Molecular compounds are compounds consisting of non-metals, characterized
+ * by sharing of electrons. Ionic compounds, on the other hand, are compounds consisting of a metal and non-metal, characterized
+ * by a transfer of electrons instead of electron sharing. Again, these 2 kinds of chemical bonds are invisible in chemical formulas.
+ *
+ * Note that pure substances are divided into 2 groups: elements and compounds. Compounds are either molecular compounds or ionic
+ * compounds, as mentioned above. Elements are either atomic elements or molecular elements. Again, these distinctions do not
+ * stand out when defining "a language for constructing formulas".
+ *
+ * TODO Formulas for hydrates, like CoCl2.6H2O, which we can now only write as CoCl2(H2O)6.
+ *
  * @author Chris de Vreeze
  */
 sealed trait Formula {
@@ -193,7 +204,7 @@ object Formula {
     def elementSymbol[_: P]: P[ElementSymbol] = P((CharIn("A-Z") ~ CharIn("a-z").rep(0)).!).map(s => ElementSymbol.parse(s))
   }
 
-  // Some well-know ionic formulas
+  // Some well-know ionic formulas. Also see https://www.thoughtco.com/list-of-common-polyatomic-ions-603977.
 
   val Hydroxide = Formula("ion(OH, -1)")
 
@@ -201,11 +212,12 @@ object Formula {
   val Bicarbonate = Formula("ion(HCO3, -1)") // also called hydrogen carbonate
 
   val Nitrate = Formula("ion(NO3, -1)")
-  val Nitrite = Formula("ion(NO2, -1)")
+  val Nitrite = Formula("ion(NO2, -1)") // Nitrite has ONE LESS oxygen than nitrate, leaving the ion charge the same
 
   val Sulfate = Formula("ion(SO4, -2)")
   val HydrogenSulfate = Formula("ion(HSO4, -1)") // also called bisulfate
-  val Sulfite = Formula("ion(SO3, -2)")
+  val Sulfite = Formula("ion(SO3, -2)") // Sulfite has ONE LESS oxygen than sulfate, leaving the ion charge the same
+  val Thiosulfate = Formula("ion(S2O3, -2)")
 
   val Phosphate = Formula("ion(PO4, -3)")
   val HydrogenPhosphate = Formula("ion(HPO4, -2)")
@@ -222,11 +234,51 @@ object Formula {
   val Bromate = Formula("ion(BrO3, -1)")
 
   val Chlorate = Formula("ion(ClO3, -1)")
-  val Perchlorate = Formula("ion(ClO4, -1)")
+  val Perchlorate = Formula("ion(ClO4, -1)") // Perchlorate has ONE MORE oxygen than chlorate, leaving the charge the same
+  val Chlorite = Formula("ion(ClO2, -1)") // Chlorite has ONE LESS oxygen than chlorate, leaving the ion charge the same
+  val Hypochlorite = Formula("ion(ClO, -1)") // Hypochlorite has TWO LESS oxygen than chlorate, leaving the ion charge the same
 
   val Chromate = Formula("ion(CrO4, -2)")
   val Dichromate = Formula("ion(Cr2O7, -2)")
 
   val Permanganate = Formula("ion(MnO4, -1)")
 
+  val Peroxide = Formula("ion(O2, -2)") // Peroxide has ONE MORE oxygen than oxide, leaving the charge the same. It is not poly-atomic!
+
+  val Cyanate = Formula("ion(OCN, -1)")
+  val Thiocyanate = Formula("ion(SCN, -1)")
+
+  val Borate = Formula("ion(BO3, -3)")
+
+  val WellKnownPolyAtomicIons: Map[String, Formula] = {
+    Map(
+      "hydroxide" -> Hydroxide,
+      "carbonate" -> Carbonate,
+      "bicarbonate" -> Bicarbonate,
+      "nitrate" -> Nitrate,
+      "nitrite" -> Nitrite,
+      "sulfate" -> Sulfate,
+      "hydrogen sulfate" -> HydrogenSulfate,
+      "sulfite" -> Sulfite,
+      "thiosulfate" -> Thiosulfate,
+      "phosphate" -> Phosphate,
+      "hydrogen phosphate" -> HydrogenPhosphate,
+      "dihydrogen phosphate" -> DihydrogenPhosphate,
+      "cyanide" -> Cyanide,
+      "cyanate" -> Cyanate,
+      "thiocyanate" -> Thiocyanate,
+      "acetate" -> Acetate,
+      "hydronium" -> Hydronium,
+      "ammonium" -> Ammonium,
+      "bromate" -> Bromate,
+      "chlorate" -> Chlorate,
+      "perchlorate" -> Perchlorate,
+      "chlorite" -> Chlorite,
+      "hypochlorite" -> Hypochlorite,
+      "chromate" -> Chromate,
+      "dichromate" -> Dichromate,
+      "permangate" -> Permanganate,
+      "borate" -> Borate,
+    )
+  }
 }

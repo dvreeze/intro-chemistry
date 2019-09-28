@@ -28,7 +28,8 @@ object OxidationStates {
 
   /**
    * Tries to find the probable or mandatory oxidation state of an element in a compound (not in an element itself because
-   * then the oxidation state is 0).
+   * then the oxidation state is 0). Note that especially for transition metals, multiple oxidation numbers are possible, in
+   * which case None is returned by this method.
    */
   def findProbableOxidationNumber(elementSymbol: ElementSymbol): Option[Int] = {
     elementSymbol match {
@@ -36,6 +37,9 @@ object OxidationStates {
       case O | S | Se => Some(getOxidationNumberOfOxygen)
       case Al => Some(getOxidationNumberOfAluminium)
       case elemSym if ElementSymbol.halogens.contains(elemSym) => Some(getOxidationNumberOfHalogens)
+      case Ag => Some(getOxidationNumberOfSilver)
+      case Zn => Some(getOxidationNumberOfZinc)
+      case Sc => Some(getOxidationNumberOfScandium)
       case _ =>
         elementSymbol.chemicalGroup match {
           case ChemicalGroupBlock.AlkaliMetal => Some(getOxidationNumberOfAlkaliMetals)
@@ -57,6 +61,24 @@ object OxidationStates {
   def getOxidationNumberOfOxygen: Int = -2
 
   def getOxidationNumberOfHalogens: Int = -1
+
+  /**
+   * Returns the probable oxidation number of silver, which is +1, although it is a transition metal (which normally
+   * has more than one possible oxidation state).
+   */
+  def getOxidationNumberOfSilver: Int = +1
+
+  /**
+   * Returns the probable oxidation number of zinc, which is +2, although it is a transition metal (which normally
+   * has more than one possible oxidation state).
+   */
+  def getOxidationNumberOfZinc: Int = +2
+
+  /**
+   * Returns the probable oxidation number of scandium, which is +3, although it is a transition metal (which normally
+   * has more than one possible oxidation state).
+   */
+  def getOxidationNumberOfScandium: Int = +3
 
   // Other oxidation state rules
 
