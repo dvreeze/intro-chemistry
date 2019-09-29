@@ -243,7 +243,7 @@ object Formula {
 
   val Permanganate = Formula("ion(MnO4, -1)")
 
-  val Peroxide = Formula("ion(O2, -2)") // Peroxide has ONE MORE oxygen than oxide, leaving the charge the same. It is not poly-atomic!
+  val Peroxide = Formula("ion(O2, -2)") // Peroxide has ONE MORE oxygen than oxide, leaving the charge the same.
 
   val Cyanate = Formula("ion(OCN, -1)")
   val Thiocyanate = Formula("ion(SCN, -1)")
@@ -278,6 +278,7 @@ object Formula {
       "chromate" -> Chromate,
       "dichromate" -> Dichromate,
       "permangate" -> Permanganate,
+      "peroxide" -> Peroxide, // poly-atomic, but single-element, and in that sense different from the other poly-atomic ions!
       "borate" -> Borate,
     )
   }
