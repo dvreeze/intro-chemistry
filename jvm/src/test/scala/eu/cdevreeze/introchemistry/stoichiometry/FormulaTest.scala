@@ -33,7 +33,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(true) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(Na -> 1)) {
@@ -54,7 +54,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(true) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(O -> 2)) {
@@ -75,7 +75,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(false) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(H -> 2, O -> 1)) {
@@ -96,7 +96,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(false) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(Ca -> 1, H -> 6, P -> 2, O -> 9)) {
@@ -117,7 +117,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(true) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(Na -> 1)) {
@@ -138,7 +138,7 @@ class FormulaTest extends AnyFunSuite {
     val frm = Formula(frmAsString)
 
     assertResult(false) {
-      frm.isElement
+      frm.isSingleElement
     }
 
     assertResult(Map(P -> 1, O -> 4)) {

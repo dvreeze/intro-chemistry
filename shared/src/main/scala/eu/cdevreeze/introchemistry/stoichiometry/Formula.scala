@@ -19,9 +19,10 @@ package eu.cdevreeze.introchemistry.stoichiometry
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
- * A formula as used in stoichiometry. A formula may have a net positive or negative charge, so it can represent either
- * a molecule or atomic element or ionic compound (which is neutral) on the one hand, or an ion (positively charged cation or negatively
- * charged anion) on the other hand.
+ * A formula as used in stoichiometry. A formula represents either an element or compound on the one hand, or an ion on
+ * the other hand. In the former case it has no net charge, and the latter case it is a charged cation or anion. An element
+ * is either an atomic element or molecular element. A compound can either represent a molecular compound or an ionic
+ * compound, but this difference is invisible in formulas.
  *
  * Example (neutral) formulas as strings (format returned by method "show" and parsed by method "parse"):
  * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula: "ion(SO4, -2)".
@@ -39,28 +40,16 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * by sharing of electrons. Ionic compounds, on the other hand, are compounds consisting of a metal and non-metal, characterized
  * by a transfer of electrons instead of electron sharing. Again, these 2 kinds of chemical bonds are invisible in chemical formulas.
  *
- * Note that pure substances are divided into 2 groups: elements and compounds. Compounds are either molecular compounds or ionic
- * compounds, as mentioned above. Elements are either atomic elements or molecular elements. Again, these distinctions do not
- * stand out when defining "a language for constructing formulas".
- *
  * TODO Formulas for hydrates, like CoCl2.6H2O, which we can now only write as CoCl2(H2O)6.
  *
  * @author Chris de Vreeze
  */
 sealed trait Formula {
 
-  def isElement: Boolean
-
-  def isCompound: Boolean
-
   /**
    * Returns the atom counts per element. This is also important to determine the mass of the formula.
    */
   def atomCounts: Map[ElementSymbol, Int]
-
-  final def elementSymbols: Set[ElementSymbol] = atomCounts.keySet
-
-  final def atomCount(elementSymbol: ElementSymbol): Int = atomCounts.getOrElse(elementSymbol, 0)
 
   def charge: Int
 
@@ -68,85 +57,182 @@ sealed trait Formula {
    * Returns the string representation from which the same formula can be parsed.
    */
   def show: String
+
+  final def isSingleElement: Boolean = elementSymbols.sizeIs == 1
+
+  final def isMultiElement: Boolean = !isSingleElement
+
+  final def isSingleAtom: Boolean = isSingleElement && atomCounts.values.head == 1
+
+  final def elementSymbols: Set[ElementSymbol] = atomCounts.keySet
+
+  final def atomCount(elementSymbol: ElementSymbol): Int = atomCounts.getOrElse(elementSymbol, 0)
 }
 
 /**
- * A neutral formula, which is either a molecule (element or compound molecule) or an ionic compound (as opposed to
- * an ion). In other words, any species that has no net charge.
+ * Formula for a species that has no net charge.
  */
-final case class NeutralFormula(partCounts: Seq[Formula.PartQuantity]) extends Formula {
-  require(partCounts.nonEmpty, s"Missing 'parts' in formula $this")
+sealed trait NonIonFormula extends Formula {
 
-  def isElement: Boolean = atomCounts.keySet.sizeIs == 1
+  final def charge: Int = 0
+}
 
-  def isCompound: Boolean = !isElement
+/**
+ * Formula for a species that has a non-zero charge, that is, an ion. So it is either a cation or an anion.
+ */
+sealed trait IonFormula extends Formula {
+
+  def underlyingNonIon: NonIonFormula
+
+  def isCation: Boolean = charge > 0
+
+  def isAnion: Boolean = charge < 0
+
+  final def show: String = s"ion(${underlyingNonIon.show}, $charge)"
+}
+
+sealed trait ElementFormula extends NonIonFormula {
+
+  def elementSymbol: ElementSymbol
+
+  def atomCount: Int
+
+  final def atomCounts: Map[ElementSymbol, Int] = Map(elementSymbol -> atomCount)
+
+  final def show: String = {
+    val showedCount: String = if (atomCount == 1) "" else atomCount.toString
+    s"$elementSymbol$showedCount"
+  }
+}
+
+final case class AtomicElement(elementSymbol: ElementSymbol) extends ElementFormula {
+
+  def atomCount: Int = 1
+}
+
+final case class MolecularElement(elementSymbol: ElementSymbol, atomCount: Int) extends ElementFormula {
+  require(atomCount >= 2, s"Not a molecular element, because the atom count is $atomCount")
+}
+
+object ElementFormula {
+
+  def apply(elementSymbol: ElementSymbol, atomCount: Int): ElementFormula = {
+    if (atomCount == 1) AtomicElement(elementSymbol) else MolecularElement(elementSymbol, atomCount)
+  }
+}
+
+/**
+ * Either a molecular compound or an ionic compound (as opposed to an ion). In other words, any compound that has no net charge.
+ * The difference between a molecular compound and an ionic compound is not visible in the formula. Hence no sub-division
+ * of this type in 2 sub-types.
+ */
+final case class Compound(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart]) extends NonIonFormula {
+  require(quantifiedFormulaParts.sizeIs >= 1, s"Not a compound: missing 'parts'")
+  require(elementSymbols.sizeIs >= 2, s"Not a compound: only 1 element ${elementSymbols.head}")
 
   def atomCounts: Map[ElementSymbol, Int] = {
-    partCounts.foldLeft(Map.empty[ElementSymbol, Int]) { case (accAtomCounts, partQuantity) =>
-      val updatedAtomCounts: Map[ElementSymbol, Int] =
-        partQuantity.atomCounts.map { case (elementSymbol, count) =>
-          val newCount = accAtomCounts.getOrElse(elementSymbol, 0) + count
-          elementSymbol -> newCount
-        }
-
-      accAtomCounts ++ updatedAtomCounts
-    }
+    Formula.getAtomCounts(quantifiedFormulaParts)
   }
 
-  def charge: Int = 0
-
-  def show: String = partCounts.map(_.show).mkString
+  def show: String = quantifiedFormulaParts.map(_.show).mkString
 }
 
-/**
- * An ionic formula, which is either an element gaining or losing electrons, or a compound gaining or losing electrons.
- */
-final case class IonicFormula(neutralFormula: NeutralFormula, charge: Int) extends Formula {
-  require(charge != 0, s"The charge must not be 0")
+object NonIonFormula {
 
-  def isElement: Boolean = neutralFormula.isElement
+  def apply(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart]): NonIonFormula = {
+    val atomCounts: Map[ElementSymbol, Int] = Formula.getAtomCounts(quantifiedFormulaParts)
 
-  def isCompound: Boolean = neutralFormula.isCompound
+    if (atomCounts.sizeIs == 1) {
+      val elementSymbol: ElementSymbol = atomCounts.head._1
+      val atomCount: Int = atomCounts.head._2
 
-  def atomCounts: Map[ElementSymbol, Int] = neutralFormula.atomCounts
+      ElementFormula(elementSymbol, atomCount)
+    } else {
+      Compound(quantifiedFormulaParts)
+    }
+  }
+}
 
-  def show: String = s"ion(${neutralFormula.show}, $charge)"
+final case class SingleAtomIon(elementSymbol: ElementSymbol, charge: Int) extends IonFormula {
+  require(charge != 0, s"Not an ion, because the charge is 0")
+
+  def underlyingNonIon: NonIonFormula = AtomicElement(elementSymbol)
+
+  def atomCounts: Map[ElementSymbol, Int] = underlyingNonIon.atomCounts
+}
+
+final case class PolyAtomicIon(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart], charge: Int) extends IonFormula {
+  require(quantifiedFormulaParts.sizeIs >= 1, s"Not a poly-atomic ion: missing 'parts'")
+  require(!isSingleAtom, s"Not a poly-atomic ion: $show")
+  require(charge != 0, s"Not an ion, because the charge is 0")
+
+  def atomCounts: Map[ElementSymbol, Int] = {
+    Formula.getAtomCounts(quantifiedFormulaParts)
+  }
+
+  def underlyingNonIon: NonIonFormula = {
+    if (atomCounts.keySet.sizeIs == 1) {
+      assert(!isSingleAtom)
+      MolecularElement(atomCounts.keySet.head, atomCounts.head._2)
+    } else {
+      Compound(quantifiedFormulaParts)
+    }
+  }
+}
+
+object IonFormula {
+
+  def apply(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart], charge: Int): IonFormula = {
+    val atomCounts: Map[ElementSymbol, Int] = Formula.getAtomCounts(quantifiedFormulaParts)
+
+    if (atomCounts.sizeIs == 1 && atomCounts.values.head == 1) {
+      val elementSymbol: ElementSymbol = atomCounts.head._1
+
+      SingleAtomIon(elementSymbol, charge)
+    } else {
+      PolyAtomicIon(quantifiedFormulaParts, charge)
+    }
+  }
 }
 
 object Formula {
 
   // The parts of a formula, without their quantities. I do not know if there is an official name for this.
 
-  sealed trait Part {
-
-    def isElement: Boolean
+  sealed trait FormulaPart {
 
     def atomCounts: Map[ElementSymbol, Int]
 
     def show: String
+
+    final def isSingleElement: Boolean = atomCounts.keySet.sizeIs == 1
+
+    final def isMultiElement: Boolean = !isSingleElement
+
+    final def isSingleAtom: Boolean = isSingleElement && atomCounts.values.head == 1
   }
 
-  final case class ElementPart(elementSymbol: ElementSymbol) extends Part {
-
-    def isElement: Boolean = true
+  final case class SingleAtomFormulaPart(elementSymbol: ElementSymbol) extends FormulaPart {
 
     def atomCounts: Map[ElementSymbol, Int] = Map(elementSymbol -> 1)
 
     def show: String = elementSymbol.toString
   }
 
-  final case class CompoundPart(formula: NeutralFormula) extends Part {
+  final case class PolyAtomicFormulaPart(quantifiedFormulaParts: Seq[QuantifiedFormulaPart]) extends FormulaPart {
+    require(quantifiedFormulaParts.sizeIs >= 1, s"Not a compound: missing 'parts'")
+    require(!isSingleAtom, s"Not a poly-atomic 'part': (${quantifiedFormulaParts.map(_.show).mkString})")
 
-    def isElement: Boolean = formula.isElement
+    def atomCounts: Map[ElementSymbol, Int] = {
+      Formula.getAtomCounts(quantifiedFormulaParts)
+    }
 
-    def atomCounts: Map[ElementSymbol, Int] = formula.atomCounts
-
-    def show: String = s"(${formula.show})"
+    def show: String = s"(${quantifiedFormulaParts.map(_.show).mkString})"
   }
 
   // A part with its quantity in a formula. I do not know if there is an official name for this.
 
-  final case class PartQuantity(part: Part, count: Int) {
+  final case class QuantifiedFormulaPart(part: FormulaPart, count: Int) {
     require(count >= 1, s"Expected count at least 1 of 'part' $part")
 
     def atomCounts: Map[ElementSymbol, Int] = {
@@ -165,6 +251,18 @@ object Formula {
     Parser.parseFormula(s)
   }
 
+  private[stoichiometry] def getAtomCounts(quantifiedFormulaParts: Seq[QuantifiedFormulaPart]): Map[ElementSymbol, Int] = {
+    quantifiedFormulaParts.foldLeft(Map.empty[ElementSymbol, Int]) { case (accAtomCounts, partQuantity) =>
+      val updatedAtomCounts: Map[ElementSymbol, Int] =
+        partQuantity.atomCounts.map { case (elementSymbol, count) =>
+          val newCount = accAtomCounts.getOrElse(elementSymbol, 0) + count
+          elementSymbol -> newCount
+        }
+
+      accAtomCounts ++ updatedAtomCounts
+    }
+  }
+
   object Parser {
 
     import fastparse._, NoWhitespace._
@@ -178,23 +276,24 @@ object Formula {
       }
     }
 
-    def formula[_: P]: P[Formula] = P(neutralFormula | ionicFormula)
+    def formula[_: P]: P[Formula] = P(nonIon | ion)
 
-    def neutralFormula[_: P]: P[NeutralFormula] =
-      P(partQuantity.rep(1)).map(partQuantities => NeutralFormula(partQuantities))
+    def nonIon[_: P]: P[NonIonFormula] =
+      P(quantifiedFormulaPart.rep(1)).map { parts => NonIonFormula(parts) }
 
-    def ionicFormula[_: P]: P[IonicFormula] =
-      P("ion" ~ "(" ~/ neutralFormula ~ "," ~ " ".rep(0) ~ charge ~ ")")
-        .map { case (fu, charge) => IonicFormula(fu, charge) }
+    def ion[_: P]: P[IonFormula] =
+      P("ion" ~ "(" ~/ quantifiedFormulaPart.rep(1) ~ "," ~ " ".rep(0) ~ charge ~ ")")
+        .map { case (parts, charge) => IonFormula(parts, charge) }
 
-    def partQuantity[_: P]: P[PartQuantity] =
-      P(part ~ count.?).map { case (p, optCnt) => PartQuantity(p, optCnt.getOrElse(1)) }
+    def quantifiedFormulaPart[_: P]: P[QuantifiedFormulaPart] =
+      P(formulaPart ~ count.?).map { case (p, optCnt) => QuantifiedFormulaPart(p, optCnt.getOrElse(1)) }
 
-    def part[_: P]: P[Part] = P(elementPart | compoundPart)
+    def formulaPart[_: P]: P[FormulaPart] = P(singleAtomFormulaPart | polyAtomicFormulaPart)
 
-    def elementPart[_: P]: P[ElementPart] = P(elementSymbol).map(el => ElementPart(el))
+    def singleAtomFormulaPart[_: P]: P[SingleAtomFormulaPart] = P(elementSymbol).map(el => SingleAtomFormulaPart(el))
 
-    def compoundPart[_: P]: P[CompoundPart] = P("(" ~ neutralFormula ~ ")").map(fu => CompoundPart(fu))
+    def polyAtomicFormulaPart[_: P]: P[PolyAtomicFormulaPart] =
+      P("(" ~ quantifiedFormulaPart.rep(1) ~ ")").map(parts => PolyAtomicFormulaPart(parts))
 
     def charge[_: P]: P[Int] =
       P(("+" | "-").!.? ~ count).map { case (optSign, n) => if (optSign.contains("-")) -n else n }.filter(_ != 0)
