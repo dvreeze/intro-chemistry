@@ -153,7 +153,7 @@ object NonIonFormula {
   }
 }
 
-final case class SingleAtomIon(elementSymbol: ElementSymbol, charge: Int) extends IonFormula {
+final case class MonatomicIon(elementSymbol: ElementSymbol, charge: Int) extends IonFormula {
   require(charge != 0, s"Not an ion, because the charge is 0")
 
   def underlyingNonIon: NonIonFormula = AtomicElement(elementSymbol)
@@ -161,9 +161,9 @@ final case class SingleAtomIon(elementSymbol: ElementSymbol, charge: Int) extend
   def atomCounts: Map[ElementSymbol, Int] = underlyingNonIon.atomCounts
 }
 
-final case class PolyAtomicIon(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart], charge: Int) extends IonFormula {
-  require(quantifiedFormulaParts.sizeIs >= 1, s"Not a poly-atomic ion: missing 'parts'")
-  require(!isSingleAtom, s"Not a poly-atomic ion: $show")
+final case class PolyatomicIon(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart], charge: Int) extends IonFormula {
+  require(quantifiedFormulaParts.sizeIs >= 1, s"Not a polyatomic ion: missing 'parts'")
+  require(!isSingleAtom, s"Not a polyatomic ion: $show")
   require(charge != 0, s"Not an ion, because the charge is 0")
 
   def atomCounts: Map[ElementSymbol, Int] = {
@@ -188,9 +188,9 @@ object IonFormula {
     if (atomCounts.sizeIs == 1 && atomCounts.values.head == 1) {
       val elementSymbol: ElementSymbol = atomCounts.head._1
 
-      SingleAtomIon(elementSymbol, charge)
+      MonatomicIon(elementSymbol, charge)
     } else {
-      PolyAtomicIon(quantifiedFormulaParts, charge)
+      PolyatomicIon(quantifiedFormulaParts, charge)
     }
   }
 }
@@ -212,16 +212,16 @@ object Formula {
     final def isSingleAtom: Boolean = isSingleElement && atomCounts.values.head == 1
   }
 
-  final case class SingleAtomFormulaPart(elementSymbol: ElementSymbol) extends FormulaPart {
+  final case class MonatomicFormulaPart(elementSymbol: ElementSymbol) extends FormulaPart {
 
     def atomCounts: Map[ElementSymbol, Int] = Map(elementSymbol -> 1)
 
     def show: String = elementSymbol.toString
   }
 
-  final case class PolyAtomicFormulaPart(quantifiedFormulaParts: Seq[QuantifiedFormulaPart]) extends FormulaPart {
+  final case class PolyatomicFormulaPart(quantifiedFormulaParts: Seq[QuantifiedFormulaPart]) extends FormulaPart {
     require(quantifiedFormulaParts.sizeIs >= 1, s"Not a compound: missing 'parts'")
-    require(!isSingleAtom, s"Not a poly-atomic 'part': (${quantifiedFormulaParts.map(_.show).mkString})")
+    require(!isSingleAtom, s"Not a polyatomic 'part': (${quantifiedFormulaParts.map(_.show).mkString})")
 
     def atomCounts: Map[ElementSymbol, Int] = {
       Formula.getAtomCounts(quantifiedFormulaParts)
@@ -288,12 +288,12 @@ object Formula {
     def quantifiedFormulaPart[_: P]: P[QuantifiedFormulaPart] =
       P(formulaPart ~ count.?).map { case (p, optCnt) => QuantifiedFormulaPart(p, optCnt.getOrElse(1)) }
 
-    def formulaPart[_: P]: P[FormulaPart] = P(singleAtomFormulaPart | polyAtomicFormulaPart)
+    def formulaPart[_: P]: P[FormulaPart] = P(monatomicFormulaPart | polyatomicFormulaPart)
 
-    def singleAtomFormulaPart[_: P]: P[SingleAtomFormulaPart] = P(elementSymbol).map(el => SingleAtomFormulaPart(el))
+    def monatomicFormulaPart[_: P]: P[MonatomicFormulaPart] = P(elementSymbol).map(el => MonatomicFormulaPart(el))
 
-    def polyAtomicFormulaPart[_: P]: P[PolyAtomicFormulaPart] =
-      P("(" ~ quantifiedFormulaPart.rep(1) ~ ")").map(parts => PolyAtomicFormulaPart(parts))
+    def polyatomicFormulaPart[_: P]: P[PolyatomicFormulaPart] =
+      P("(" ~ quantifiedFormulaPart.rep(1) ~ ")").map(parts => PolyatomicFormulaPart(parts))
 
     def charge[_: P]: P[Int] =
       P(("+" | "-").!.? ~ count).map { case (optSign, n) => if (optSign.contains("-")) -n else n }.filter(_ != 0)
@@ -349,7 +349,7 @@ object Formula {
 
   val Borate = Formula("ion(BO3, -3)")
 
-  val WellKnownPolyAtomicIons: Map[String, Formula] = {
+  val WellKnownPolyatomicIons: Map[String, Formula] = {
     Map(
       "hydroxide" -> Hydroxide,
       "carbonate" -> Carbonate,
@@ -377,7 +377,7 @@ object Formula {
       "chromate" -> Chromate,
       "dichromate" -> Dichromate,
       "permangate" -> Permanganate,
-      "peroxide" -> Peroxide, // poly-atomic, but single-element, and in that sense different from the other poly-atomic ions!
+      "peroxide" -> Peroxide, // polyatomic, but single-element, and in that sense different from the other polyatomic ions!
       "borate" -> Borate,
     )
   }
