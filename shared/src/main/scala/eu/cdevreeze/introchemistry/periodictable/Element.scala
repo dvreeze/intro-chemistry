@@ -24,8 +24,8 @@ package eu.cdevreeze.introchemistry.periodictable
 final case class Element(
   symbol: ElementSymbol,
   name: String,
-  atomicMass: BigDecimal
-) {
+  atomicMass: BigDecimal,
+  oxidationStates: Set[Int]) {
 
   def symbolName: String = symbol.symbolName
 
@@ -34,6 +34,6 @@ final case class Element(
   def chemicalGroup: ChemicalGroupBlock = symbol.chemicalGroup
 
   override def toString: String = {
-    (0 to productArity).map(idx => s"${productElementName(idx) -> productElement(idx)}").mkString("[ ", ", ",  " ]")
+    (0 to productArity).map(idx => s"${productElementName(idx) -> productElement(idx)}").mkString("[ ", ", ", " ]")
   }
 }

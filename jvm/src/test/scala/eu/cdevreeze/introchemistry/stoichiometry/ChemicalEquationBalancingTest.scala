@@ -16,7 +16,7 @@
 
 package eu.cdevreeze.introchemistry.stoichiometry
 
-import eu.cdevreeze.introchemistry.periodictable.jvm.PeriodicTableLoader
+import eu.cdevreeze.introchemistry.periodictable.load.PeriodicTableLoader
 import org.scalatest.funsuite.AnyFunSuite
 
 /**
