@@ -84,10 +84,42 @@ final class PeriodicTableLoader(val rootElem: simple.Elem) {
     val name = elementXmlElem.getChildElem(_.localName == "Name").text.trim
     val atomicMass = BigDecimal(elementXmlElem.getChildElem(_.localName == "AtomicMass").text.trim)
 
+    val electronConfig = elementXmlElem.getChildElem(_.localName == "ElectronConfiguration").text.trim
+      .replace("(calculated)", "").replace("(predicted)", "").trim // Somewhat brittle!
+
+    val electronegativityOption: Option[BigDecimal] = {
+      val stringValue = elementXmlElem.getChildElem(_.localName == "Electronegativity").text.trim
+      if (stringValue.isEmpty) None else Some(BigDecimal(stringValue))
+    }
+
+    val atomicRadiusOption: Option[BigDecimal] = {
+      val stringValue = elementXmlElem.getChildElem(_.localName == "AtomicRadius").text.trim
+      if (stringValue.isEmpty) None else Some(BigDecimal(stringValue))
+    }
+
+    val ionizationEnergyOption: Option[BigDecimal] = {
+      val stringValue = elementXmlElem.getChildElem(_.localName == "IonizationEnergy").text.trim
+      if (stringValue.isEmpty) None else Some(BigDecimal(stringValue))
+    }
+
+    val electronAffinityOption: Option[BigDecimal] = {
+      val stringValue = elementXmlElem.getChildElem(_.localName == "ElectronAffinity").text.trim
+      if (stringValue.isEmpty) None else Some(BigDecimal(stringValue))
+    }
+
     val oxidationStates: Set[Int] =
       elementXmlElem.findChildElem(_.localName == "OxidationStates").map(_.text.trim).map(parseOxidationStates).getOrElse(Set.empty)
 
-    Element(elementSymbol, name, atomicMass, oxidationStates)
+    Element(
+      elementSymbol,
+      name,
+      atomicMass,
+      electronConfig,
+      electronegativityOption,
+      atomicRadiusOption,
+      ionizationEnergyOption,
+      electronAffinityOption,
+      oxidationStates)
   }
 
   private def isXmlElemForElementSymbol(elem: resolved.Elem, elementSymbol: ElementSymbol): Boolean = {

@@ -25,6 +25,11 @@ final case class Element(
   symbol: ElementSymbol,
   name: String,
   atomicMass: BigDecimal,
+  electronConfiguration: String,
+  electronegativityOption: Option[BigDecimal],
+  atomicRadiusOption: Option[BigDecimal],
+  ionizationEnergyOption: Option[BigDecimal],
+  electronAffinityOption: Option[BigDecimal],
   oxidationStates: Set[Int]) {
 
   def symbolName: String = symbol.symbolName
@@ -34,6 +39,17 @@ final case class Element(
   def chemicalGroup: ChemicalGroupBlock = symbol.chemicalGroup
 
   override def toString: String = {
-    (0 to productArity).map(idx => s"${productElementName(idx) -> productElement(idx)}").mkString("[ ", ", ", " ]")
+    (0 to productArity).map { idx =>
+      val propertyName = productElementName(idx)
+
+      val propertyValue = propertyName match {
+        case "electronegativityOption" | "atomicRadiusOption" | "ionizationEnergyOption" | "electronAffinityOption" =>
+          productElement(idx).asInstanceOf[Option[_]].map(_.toString).getOrElse("")
+        case "oxidationStates" => productElement(idx).asInstanceOf[Set[_]].mkString("[", ",", "]")
+        case _ => productElement(idx)
+      }
+
+      s"$propertyName -> $propertyValue"
+    }.mkString("[ ", ", ", " ]")
   }
 }

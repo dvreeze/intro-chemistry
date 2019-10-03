@@ -78,9 +78,12 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
    */
   def relativeElectronCount: Int = subshellConfigs.map(_.electronCount).sum
 
+  /**
+   * Returns a string representation of the electron config. For example: [Xe]6s2 4f14 5d10 6p3.
+   */
   def show: String = {
     val nobleGasString = previousNobleGasOption.map(elm => s"[$elm]").getOrElse("")
-    s"$nobleGasString${subshellConfigs.map(_.show).mkString}"
+    s"$nobleGasString${subshellConfigs.map(_.show).mkString(" ")}"
   }
 
   def minus(subshellConfig: SubshellConfig): ElectronConfig = {
@@ -94,6 +97,9 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
 
 object ElectronConfig {
 
+  /**
+   * Parses the string into an ElectronConfig object. The string is expected to be in the format returned by the show method.
+   */
   def parse(s: String): ElectronConfig = {
     val previousNobleGasOption: Option[ElementSymbol] =
       if (s.startsWith("[")) {
@@ -111,16 +117,9 @@ object ElectronConfig {
   }
 
   private def parseSubshellConfigs(s: String): Seq[SubshellConfig] = {
-    if (s.isEmpty) {
-      Seq.empty
-    } else {
-      require(s.startsWith("("), s"Syntax error in 'electron config' $s")
-      val idx = s.indexOf(")")
-      require(idx > 0, s"Syntax error in 'electron config' $s")
+    val subshellConfigStrings: Seq[String] = s.trim.split(" ").toIndexedSeq.map(_.trim).filter(_.nonEmpty)
 
-      // Recursive call
-      parseSubshellConfigs(s.substring(idx + 1)).prepended(SubshellConfig.parse(s.substring(0, idx + 1)))
-    }
+    subshellConfigStrings.map(ssg => SubshellConfig.parse(ssg))
   }
 
   /**
@@ -145,7 +144,7 @@ object ElectronConfig {
       electronCount <= subshell.maxElectronCount,
       s"The electron count must be at most ${subshell.maxElectronCount}, but got $electronCount instead")
 
-    def show: String = s"($level${subshell.name}$electronCount)"
+    def show: String = s"$level${subshell.name}$electronCount"
 
     def minusElectron: SubshellConfig = {
       require(electronCount > 1, s"Electron count is $electronCount, so cannot remove electron")
@@ -157,11 +156,13 @@ object ElectronConfig {
   object SubshellConfig {
 
     def parse(s: String): SubshellConfig = {
-      require(s.startsWith("(") && s.endsWith(")") && s.length >= 5, s"Expected format like so: (2p5), but got $s")
+      require(
+        s.headOption.exists(c => Character.isDigit(c)) &&
+          s.lastOption.exists(c => Character.isDigit(c)) && s.length >= 3,
+        s"Expected format like so: 2p5, but got $s")
 
-      val content = s.drop(1).dropRight(1)
-      val level: Int = Try(content.takeWhile(c => Character.isDigit(c)).toInt).getOrElse(sys.error(s"No level found in $s"))
-      val contentWithoutLevel = content.dropWhile(c => Character.isDigit(c))
+      val level: Int = Try(s.takeWhile(c => Character.isDigit(c)).toInt).getOrElse(sys.error(s"No level found in $s"))
+      val contentWithoutLevel = s.dropWhile(c => Character.isDigit(c))
       val subshell = Subshell.parse(contentWithoutLevel.take(1))
       val electronCount = Try(contentWithoutLevel.drop(1).toInt).getOrElse(sys.error(s"No electron count found in $s"))
 
