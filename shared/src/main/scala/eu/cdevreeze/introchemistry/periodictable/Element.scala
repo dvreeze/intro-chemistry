@@ -38,8 +38,8 @@ final case class Element(
 
   def chemicalGroup: ChemicalGroupBlock = symbol.chemicalGroup
 
-  override def toString: String = {
-    (0 to productArity).map { idx =>
+  def show: String = {
+    (0 until productArity).map { idx =>
       val propertyName = productElementName(idx)
 
       val propertyValue = propertyName match {
