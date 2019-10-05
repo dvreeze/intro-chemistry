@@ -37,9 +37,7 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
   }
 
   def isBalanced: Boolean = {
-    usedElements.forall(elemSymbol => isBalancedForElement(elemSymbol)) &&
-      isBalancedWithRespectToCharges(reactants) &&
-      isBalancedWithRespectToCharges(products)
+    usedElements.forall(elemSymbol => isBalancedForElement(elemSymbol)) && isBalancedWithRespectToCharges
   }
 
   def isBalancedForElement(elementSymbol: ElementSymbol): Boolean = {
@@ -48,7 +46,7 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
     leftHandCount == rightHandCount
   }
 
-  def isBalancedWithRespectToCharges(productsOrReactants: Seq[ChemicalEquation.FormulaQuantity]): Boolean = {
+  def isBalancedWithRespectToCharges: Boolean = {
     val leftHandCount: Int = reactants.map(fq => fq.quantity * fq.formula.charge).sum
     val rightHandCount: Int = products.map(fq => fq.quantity * fq.formula.charge).sum
     leftHandCount == rightHandCount
@@ -60,6 +58,16 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
     ChemicalEquation(
       reactants.map(fq => fq.copy(quantity = factor * fq.quantity)),
       products.map(fq => fq.copy(quantity = factor * fq.quantity)))
+  }
+
+  /**
+   * Returns the same equation, but removing reactants that are also products. Those duplicates must match exactly
+   * (including the phase, if any) or else they are not recognized as duplicates.
+   */
+  def withoutDuplicates: ChemicalEquation = {
+    val duplicates = reactants.toSet.intersect(products.toSet)
+
+    if (duplicates.isEmpty) this else ChemicalEquation(reactants.filterNot(duplicates), products.filterNot(duplicates))
   }
 
   /**

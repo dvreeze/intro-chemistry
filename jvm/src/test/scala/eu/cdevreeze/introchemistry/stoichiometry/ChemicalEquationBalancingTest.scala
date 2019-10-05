@@ -100,4 +100,31 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
       balancedReactionOption
     }
   }
+
+  test("testBalanceOtherChemicalEquation") {
+    val unbalancedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) --> 1 Cu(CO3) (s) + 1 K(NO3) (aq)").ensuring(!_.isBalanced)
+
+    val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
+
+    val expectedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) --> 1 Cu(CO3) (s) + 2 K(NO3) (aq)")
+
+    assertResult(Some(expectedReaction)) {
+      balancedReactionOption
+    }
+  }
+
+  test("testBalanceOtherIonicChemicalEquation") {
+    val rawReaction =
+      ChemicalEquation(
+        "1 ion(Cu, 2) (aq) + 1 ion(NO3, -1) (aq) + 1 ion(K, 1) (aq) + 1 ion(CO3, -2) (aq) --> 1 CuCO3 (s) + 1 ion(K, 1) (aq) + 1 ion(NO3, -1) (aq)")
+
+    val balancedReactionOption: Option[ChemicalEquation] =
+      stoichiometrySupport.tryToBalanceChemicalEquation(rawReaction.withoutDuplicates)
+
+    val expectedReaction = ChemicalEquation("1 ion(Cu, 2) (aq) + 1 ion(CO3, -2) (aq) --> 1 CuCO3 (s)")
+
+    assertResult(Some(expectedReaction)) {
+      balancedReactionOption
+    }
+  }
 }
