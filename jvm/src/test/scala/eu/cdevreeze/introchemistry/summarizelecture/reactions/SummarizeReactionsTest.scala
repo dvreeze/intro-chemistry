@@ -83,6 +83,10 @@ class SummarizeReactionsTest extends AnyFunSuite {
       "1 K + 1 Cl2 --> 1 KCl",
       "1 Al (s) + 1 HCl (aq) --> 1 H2 (g) + 1 AlCl3 (aq)",
       "1 N2 (g) + 1 H2 (g) --> 1 NH3 (g)",
+      "1 C2H6 + 1 O2 --> 1 CO2 + 1 H2O",
+      "1 C3H8 + 1 O2 --> 1 CO2 + 1 H2O",
+      "1 C4H10 + 1 O2 --> 1 CO2 + 1 H2O",
+      "1 C13H28 + 1 O2 --> 1 CO2 + 1 H2O",
     ).map(s => s.ce)
 
     val expectedEquations: Seq[ChemicalEquation] = Seq(
@@ -97,6 +101,10 @@ class SummarizeReactionsTest extends AnyFunSuite {
       "2 K + 1 Cl2 --> 2 KCl",
       "2 Al (s) + 6 HCl (aq) --> 3 H2 (g) + 2 AlCl3 (aq)",
       "1 N2 (g) + 3 H2 (g) --> 2 NH3 (g)",
+      "2 C2H6 + 7 O2 --> 4 CO2 + 6 H2O",
+      "1 C3H8 + 5 O2 --> 3 CO2 + 4 H2O",
+      "2 C4H10 + 13 O2 --> 8 CO2 + 10 H2O",
+      "1 C13H28 + 20 O2 --> 13 CO2 + 14 H2O",
     ).map(s => s.ce.ensuring(ce => ce.isBalanced))
 
     assertResult(expectedEquations) {
@@ -239,5 +247,88 @@ class SummarizeReactionsTest extends AnyFunSuite {
       netIonicCe1
     }
     assertResult(true)(netIonicCe1.isBalanced)
+  }
+
+  test("acidBaseReactions") {
+    val ce = "1 CaCO3 (s) + 1 H2SO4 (aq) --> 1 CaSO4 (s) + 1 H2O (l) + 1 CO2 (g)".ce
+    assertResult(true)(ce.isBalanced)
+
+    // Acids typically have sour taste, cause color changes in plant dyes, react with some metals to produce hydrogen gas,
+    // react with carbonates and bicarbonates to produce CO2 gas, and aqueous acid solutions conduct electricity.
+
+    // Bases typically have bitter taste, are slippery (e.g. soaps), cause color changes in plant dyes, and aqueous base solutions conduct electricity.
+
+    // Arrhenius acid: substance that produces ion(H, 1) (hydronium: ion(H3O, 1)) in water.
+    // Arrhenius base: substance that produces hydroxide anion in water.
+
+    val arrheniusAcidCe = "1 HCl + 1 H2O --> 1 ion(H3O, +1) + 1 ion(Cl, -1)".ce
+    assertResult(true)(arrheniusAcidCe.isBalanced)
+
+    val arrheniusBaseCe = "1 NH3 + 1 H2O --> 1 ion(NH4, +1) + 1 ion(OH, -1)".ce
+    assertResult(true)(arrheniusBaseCe.isBalanced)
+
+    // Bronsted acid: proton donor. More generic than Arrhenius acid.
+    // Bronsted base: proton acceptor. More generic than Arrhenius base.
+    // Typical "Bronsted acid/base reactions" both turn a base into an acid, and an acid into a base.
+
+    // Acid-base neutralization reaction: between acid and base, producing salt and water. Salts are all strong electrolytes.
+    // At the equivalence point of the acid-base reaction the moles of ion(H, 1) and the moles of ion(OH, -1) are equal.
+
+    val ce1 = "1 HCl (aq) + 1 NaOH (aq) --> 1 NaCl (aq) + 1 H2O (l)".ce
+    assertResult(true)(ce1.isBalanced)
+
+    val ce2 = "1 HBr (aq) + 1 KOH (aq) --> 1 KBr (aq) + 1 H2O (l)".ce
+    assertResult(true)(ce2.isBalanced)
+
+    val ce2NetIonic = "1 ion(H, +1) (aq) + 1 ion(OH, -1) (aq) --> 1 H2O (l)".ce // The same for all such reactions
+    assertResult(true)(ce2NetIonic.isBalanced)
+
+    val ce3 = "2 HNO3 (aq) + 1 Ba(OH)2 (aq) --> 1 Ba(NO3)2 (aq) + 2 H2O (l)".ce
+    assertResult(true)(ce3.isBalanced)
+  }
+
+  test("redoxReactions") {
+    // Oxidation-reduction reactions, or redox reactions, are electron transfer reactions. Atoms change oxidation number.
+    // Compare them with acid-base reactions where instead of electrons protons are transferred.
+
+    // Redox reactions can be written as a pair of half-reactions, each of them either losing or gaining electrons.
+    // Oxidation is the loss of electrons, and reduction is the gain of electrons. Reduction indeed means: reduction of charge.
+
+    // Free elements have oxidation number 0. For example: Li, Ni, O2, Cl2.
+    // Monatomic ions have the ionic charge as oxidation number. For example: ion(Li, 1), ion(F, -1), ion(Ti, 4).
+    // Oxygen has oxidation number -2. For example: MgO, TiO2. It has oxidation number -1 only in H2O2 and ion(O2, -2).
+    // Hydrogen has oxidation number 1. For example: H2O, HCl. It has oxidation number -1 in binary metal compounds. For example: LiH, CaH2.
+    // Fluorine has oxidation number -1. For example: HF, MgF2.
+    // Other halides typically have oxidation number -1. For example: HCl, NaBr. Examples of positive values: KClO3, HIO4.
+
+    // Molecules must be neutral, so the sum of the oxidation states of the atoms must be zero.
+    // For polyatomic ions the sum of the oxidation states must be equal to the net charge or the ion.
+    // Oxidation numbers are typically integers but do not have to be integers.
+
+    // SO2: S has oxidation number 4 and O has oxidation number -2.
+    // ion(Cr2O7, -2): Cr has oxidation number 6 and O has oxidation number -2.
+    // ion(NH4, 1): N has oxidation number -3 and H has oxidation number 1.
+    // HClO4: H has oxidation number 1 and O has oxidation number -2 and Cl has oxidation number 7.
+
+    val ce1 = "1 Fe (s) + 1 ion(Cu, 2) (aq) --> 1 ion(Fe, 2) (aq) + 1 Cu (s)".ce // consider the oxidation state changes
+    assertResult(true)(ce1.isBalanced)
+
+    // The 4 types of redox reactions are:
+    // 1. combination
+    // 2. decomposition
+    // 3. displacement (for example: 2 KI + 1 Cl2 --> 2 KCl + I2)
+    // 4. disproportionation (for example: 2 H2O2 --> 1 H2O + 1 O2)
+    // Note that not all disproportionation reactions are redox reactions.
+  }
+
+  test("combustionReactions") {
+    // Specific types of redox reactions: combustion reactions.
+    // Combustion reactions are reactions of hydrocarbons (species containing H and C) and oxygen, yielding CO2 and water.
+
+    val ce1 = "1 C3H8 + 5 O2 --> 4 H2O + 3 CO2".ce // propane combustion
+    assertResult(true)(ce1.isBalanced)
+
+    val ce2 = "1 C2H4 + 3 O2 --> 2 H2O + 2 CO2".ce // ethene combustion
+    assertResult(true)(ce2.isBalanced)
   }
 }
