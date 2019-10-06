@@ -19,6 +19,13 @@ package eu.cdevreeze.introchemistry.periodictable
 /**
  * An element in the periodic table, containing the element symbol as well as much other data as found in periodic tables.
  *
+ * Below, the atomic mass is in amu (which is equal to grams per mole), the electron configuration is in a format that can
+ * be parsed by method ElectronConfig.parse, the optional electronegativity uses the Pauling scale, the optional atomic
+ * radius is in pm (picometer, which is 1e-12 m), the optional ionization energy is in eV (electronvolt), and the optional
+ * electron affinity is in eV as well.
+ *
+ * Note that 1 eV is 1.602176634e-19 J, where Joule is kg * m * m / (s * s). Joule is also coulomb-volt or watt-second.
+ *
  * @author Chris de Vreeze
  */
 final case class Element(
