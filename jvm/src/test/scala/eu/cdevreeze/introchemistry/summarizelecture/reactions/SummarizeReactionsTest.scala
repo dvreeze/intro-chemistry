@@ -80,6 +80,9 @@ class SummarizeReactionsTest extends AnyFunSuite {
       "1 CH4 + 1 O2 --> 1 CO2 + 1 H2O",
       "1 N2 + 1 F2 --> 1 NF3",
       "1 AlBr3 + 1 K2SO4 --> 1 KBr + 1 Al2(SO4)3",
+      "1 K + 1 Cl2 --> 1 KCl",
+      "1 Al (s) + 1 HCl (aq) --> 1 H2 (g) + 1 AlCl3 (aq)",
+      "1 N2 (g) + 1 H2 (g) --> 1 NH3 (g)",
     ).map(s => s.ce)
 
     val expectedEquations: Seq[ChemicalEquation] = Seq(
@@ -91,10 +94,94 @@ class SummarizeReactionsTest extends AnyFunSuite {
       "1 CH4 + 2 O2 --> 1 CO2 + 2 H2O",
       "1 N2 + 3 F2 --> 2 NF3",
       "2 AlBr3 + 3 K2SO4 --> 6 KBr + 1 Al2(SO4)3",
+      "2 K + 1 Cl2 --> 2 KCl",
+      "2 Al (s) + 6 HCl (aq) --> 3 H2 (g) + 2 AlCl3 (aq)",
+      "1 N2 (g) + 3 H2 (g) --> 2 NH3 (g)",
     ).map(s => s.ce.ensuring(ce => ce.isBalanced))
 
     assertResult(expectedEquations) {
       rawEquations.map(ce => tryToBalanceChemicalEquation(ce).get)
+    }
+  }
+
+  test("aqueousSolutions") {
+    // Solutions can be anything, in any phase (!), where the solvent is the substance of which we have the most and the solute
+    // is the other substance. In aqueous solutions, the solvent is water, and a typical solute could be table salt.
+
+    // Electrolytes (in water) are substances that produce an electrically conducting solution when dissolved in water.
+    // The dissolved electrolyte separates into cations and anions. An negative electrode put into the solution would attract
+    // the cations, and a positive electrode would attract the anions (opposites attract).
+
+    // Strong electrolytes are substances that completely dissolve in water (or in the molten state) and that are capable of conducting electricity.
+    // Weak electrolytes are substances that partially dissolve in water and that are therefore poor conductors of electricity.
+    // Non-electrolytes do not dissolve in water and do not conduct electricity.
+
+    // Strong electrolyte: table salt
+
+    assertResult(true) {
+      "1 NaCl (s) --> 1 ion(Na, +1) (aq) + 1 ion(Cl, -1) (aq)".ce.isBalanced
+    }
+
+    // Weak electrolyte: acetic acid
+
+    assertResult(true) {
+      "1 CH3COOH (l) + 1 H2O (l) --> 1 ion(CH3COO, -1) (aq) + 1 ion(H3O, +1) (aq)".ce.isBalanced
+    }
+
+    // Non-electrolyte: simple sugar
+
+    assertResult(true) {
+      "1 C6H12O6 (s) --> 1 C6H12O6 (aq)".ce.isBalanced
+    }
+
+    // Strong electrolytes are ionic compounds, and for example HCl, HNO3, HClO4 and NaOH.
+    // Put differently, strong acids, strong bases and ionic compounds typically make strong electrolytes.
+
+    // Weak electrolytes are for example CH3COOH, HF, HNO2 and H2O.
+    // Put differently, weak acids and bases typically make weak electrolytes.
+
+    // Non-electrolytes are for example (NH2)2CO, CH3OH, C2H5OH and C12H22O11.
+    // Hydrocarbons and large organic molecules are typically non-electrolytes.
+
+    // Strong acids are for example HCl, HBr, HI, HNO3, H2SO4 and HClO4. Note that (these) acids acts as proton donor during ionization.
+    // Note that HNO3 is a strong acid but HNO2 is a weak acid. Also, H2SO4 is a strong acid, but HSO4 is a weak acid.
+
+    // Strong bases are for example LiOH, NaOH, KOH, Ca(OH)2, Sr(OH)2 and Ba(OH)2. Note that (these) bases contain hydroxide
+    // ions and act as proton acceptors during ionization.
+
+    // Note that weak acids or bases can still be dangerous.
+  }
+
+  test("solubilityOfIonicCompounds") {
+    // Solubility is the maximum amount of solute that will dissolve in a given quantity of the solvent at a given temperature.
+
+    // Recall that all ionic compounds are electrolytes, yet not all electrolytes are soluble in water.
+
+    // Below are the solubility rules (in water), from
+    // https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Supplemental_Modules_(Physical_and_Theoretical_Chemistry)/Equilibria/Solubilty/Solubility_Rules
+
+    // 1. Salts containing group 1 elements (ion(Li, +1), ion(Na, +1), ion(K, +1) etc.) are soluble. So are salts containing the ammonium ion.
+    // 2. Salts containing the nitrate ion are generally soluble.
+    // 3. Salts containing the chloride, bromide and iodide anions are generally soluble. Exceptions are halide salts of silver, lead and mercury.
+    // 4. Most silver salts are insoluble, but exceptions are AgNO3 and Ag(C2H3O2).
+    // 5. Most sulfate salts are soluble, but exceptions include CaSO4, BaSO4, PbSO4, Ag2SO4 and SrSO4.
+    // 6. Most hydroxide salts are only slightly soluble. Hydroxide salts of group 1 elements are soluble, and those of group 2 elements are slightly soluble.
+    //    Those of transition metals and ion(Al, +3) are insoluble.
+    // 7. Most sulfides (that is, sulfides, not sulfites) of transition metals are insoluble, and so are sulfides of arsenic, antimony, bismuth and lead.
+    //    According to the chemistry course from the University of Kentucky, exceptions are sulfides of calcium, strontium (Sr) and barium.
+    // 8. Carbonates are generally insoluble, in particular group 2 carbonates and FeCO3 and PbCO3.
+    // 9. Chromates are generally insoluble, such as PbCrO4 and BaCrO4.
+    // 9. Phosphates are frequently insoluble.
+    // 10. Fluorides are frequently insoluble.
+
+    // If 2 rules above contradict each other, the first one applies. Another rule (in the course) says that most acetates are soluble.
+
+    val someSolubleIonicCompounds = Set("NaBr".f, "Mg(NO3)2".f, "K2SO4".f, "Sr(OH)2".f, "NH4Cl".f, "AgNO3".f, "NaC2H3O2".f, "LiCl".f, "NaOH".f, "MgSO4".f, "Sr(NO3)2".f)
+
+    val someInsolubleIonicCompounds = Set("MgCO3".f, "Al2S3".f, "CaSO4".f, "PbBr2".f, "Mg3(PO4)2".f, "BaSO4".f, "K3PO4".f, "CaCO3".f)
+
+    assertResult(true) { // Tests nothing, of course.
+      someSolubleIonicCompounds.intersect(someInsolubleIonicCompounds).isEmpty
     }
   }
 }
