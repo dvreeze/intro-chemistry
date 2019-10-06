@@ -18,6 +18,7 @@ package eu.cdevreeze.introchemistry.summarizelecture.reactions
 
 import eu.cdevreeze.introchemistry.api.SimpleQueryApi
 import eu.cdevreeze.introchemistry.periodictable.load.PeriodicTableLoader
+import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
 import org.scalatest.funsuite.AnyFunSuite
 
 /**
@@ -57,6 +58,43 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     assertResult("1 SiCl4 + 2 H2O --> 1 SiO2 + 4 HCl".ce) {
       ce3
+    }
+
+    // Reaction of iron and oxygen.
+
+    val rawCe4 = "1 Fe + 1 O2 --> 1 Fe2O3".ce
+    val ce4 = tryToBalanceChemicalEquation(rawCe4).get
+
+    assertResult("4 Fe + 3 O2 --> 2 Fe2O3".ce) {
+      ce4
+    }
+  }
+
+  test("writingBalancedChemicalEquationsExercise") {
+    val rawEquations: Seq[ChemicalEquation] = Seq(
+      "1 NaBr + 1 F2 --> 1 NaF + 1 Br2",
+      "1 K + 1 H2O --> 1 KOH + 1 H2",
+      "1 H2O2 --> 1 H2O + 1 O2",
+      "1 CuSO4 + 1 KCN --> 1 Cu(CN)2 + 1 K2SO4",
+      "1 P4 + 1 O2 --> 1 P4O6",
+      "1 CH4 + 1 O2 --> 1 CO2 + 1 H2O",
+      "1 N2 + 1 F2 --> 1 NF3",
+      "1 AlBr3 + 1 K2SO4 --> 1 KBr + 1 Al2(SO4)3",
+    ).map(s => s.ce)
+
+    val expectedEquations: Seq[ChemicalEquation] = Seq(
+      "2 NaBr + 1 F2 --> 2 NaF + 1 Br2",
+      "2 K + 2 H2O --> 2 KOH + 1 H2",
+      "2 H2O2 --> 2 H2O + 1 O2",
+      "1 CuSO4 + 2 KCN --> 1 Cu(CN)2 + 1 K2SO4",
+      "1 P4 + 3 O2 --> 1 P4O6",
+      "1 CH4 + 2 O2 --> 1 CO2 + 2 H2O",
+      "1 N2 + 3 F2 --> 2 NF3",
+      "2 AlBr3 + 3 K2SO4 --> 6 KBr + 1 Al2(SO4)3",
+    ).map(s => s.ce.ensuring(ce => ce.isBalanced))
+
+    assertResult(expectedEquations) {
+      rawEquations.map(ce => tryToBalanceChemicalEquation(ce).get)
     }
   }
 }
