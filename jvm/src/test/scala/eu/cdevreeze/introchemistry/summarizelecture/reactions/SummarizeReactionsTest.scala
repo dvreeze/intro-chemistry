@@ -168,7 +168,7 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // 6. Most hydroxide salts are only slightly soluble. Hydroxide salts of group 1 elements are soluble, and those of group 2 elements are slightly soluble.
     //    Those of transition metals and ion(Al, +3) are insoluble.
     // 7. Most sulfides (that is, sulfides, not sulfites) of transition metals are insoluble, and so are sulfides of arsenic, antimony, bismuth and lead.
-    //    According to the chemistry course from the University of Kentucky, exceptions are sulfides of calcium, strontium (Sr) and barium.
+    //    According to the chemistry course from the University of Kentucky, exceptions are sulfides of calcium, strontium (Sr) and barium, that are all soluble in water to a limited extent.
     // 8. Carbonates are generally insoluble, in particular group 2 carbonates and FeCO3 and PbCO3.
     // 9. Chromates are generally insoluble, such as PbCrO4 and BaCrO4.
     // 9. Phosphates are frequently insoluble.
@@ -183,5 +183,61 @@ class SummarizeReactionsTest extends AnyFunSuite {
     assertResult(true) { // Tests nothing, of course.
       someSolubleIonicCompounds.intersect(someInsolubleIonicCompounds).isEmpty
     }
+  }
+
+  test("precipitationReactions") {
+    // Reactions can result in precipitates. The precipitate is the insoluble solid that separates from the solution.
+    // Use the solubility rules for predicting the precipitate.
+
+    // Copper(II) sulfide precipitate
+
+    assertResult(true) {
+      "1 (NH4)2S (aq) + 1 Cu(NO3)2 (aq) --> 2 (NH4)(NO3) (aq) + 1 CuS (s)".ce.isBalanced
+    }
+
+    // No reaction, no precipitation
+
+    assertResult(true) {
+      "1 Na2SO4 (aq) + 1 MgCl2 (aq) --> 1 MgSO4 (aq) + 2 NaCl (aq)".ce.isBalanced
+    }
+  }
+
+  test("molecularAndIonicAndNetIonicEquations") {
+    // Consider precipitation reactions again. We can start with a molecular equation, turn it into a complete ionic equation,
+    // and finally turn that one into a net ionic equation. The molecular equation does not show what is actually happenning.
+
+    // Precipitation of copper(II) sulfide
+
+    val molecularCe = "1 (NH4)2S (aq) + 1 Cu(NO3)2 (aq) --> 2 NH4NO3 (aq) + 1 CuS (s)".ce
+    assertResult(true)(molecularCe.isBalanced)
+
+    // Write the aqueous substances as ions, in an ionic equation
+    val ionicCe =
+      "2 ion(NH4, 1) (aq) + 1 ion(S, -2) (aq) + 1 ion(Cu, 2) (aq) + 2 ion(NO3, -1) (aq) --> 2 ion(NH4, 1) (aq) + 2 ion(NO3, -1) (aq) + 1 CuS (s)".ce // with spectator ions
+    assertResult(true)(ionicCe.isBalanced)
+
+    val netIonicCe = ionicCe.withoutDuplicates
+
+    assertResult("1 ion(S, -2) (aq) + 1 ion(Cu, 2) (aq) --> 1 CuS (s)".ce) {
+      netIonicCe
+    }
+    assertResult(true)(netIonicCe.isBalanced)
+
+    // Precipitation of copper(II) carbonate
+
+    val molecularCe1 = "1 K2CO3 (aq) + 1 Cu(NO3)2 (aq) --> 2 KNO3 (aq) + 1 CuCO3 (s)".ce
+    assertResult(true)(molecularCe1.isBalanced)
+
+    // Write the aqueous substances as ions, in an ionic equation
+    val ionicCe1 =
+      "2 ion(K, 1) (aq) + 1 ion(CO3, -2) (aq) + 1 ion(Cu, 2) (aq) + 2 ion(NO3, -1) (aq) --> 2 ion(K, 1) (aq) + 2 ion(NO3, -1) (aq) + 1 CuCO3 (s)".ce // with spectator ions
+    assertResult(true)(ionicCe1.isBalanced)
+
+    val netIonicCe1 = ionicCe1.withoutDuplicates
+
+    assertResult("1 ion(CO3, -2) (aq) + 1 ion(Cu, 2) (aq) --> 1 CuCO3 (s)".ce) {
+      netIonicCe1
+    }
+    assertResult(true)(netIonicCe1.isBalanced)
   }
 }
