@@ -86,8 +86,8 @@ object ChemicalEquation {
     require(quantity > 0, s"Quantity must be > 0")
 
     def show: String = {
-      val phaseString = phaseOption.map(ph => s"($ph)").getOrElse("")
       val quantityString = if (quantity == 1) "" else quantity.toString + " "
+      val phaseString = phaseOption.map(ph => s"($ph)").getOrElse("")
 
       s"$quantityString${formula.show} $phaseString".trim
     }
