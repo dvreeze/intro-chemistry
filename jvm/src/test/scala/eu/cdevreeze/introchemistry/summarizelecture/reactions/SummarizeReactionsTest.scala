@@ -127,13 +127,13 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Strong electrolyte: table salt
 
     assertResult(true) {
-      "1 NaCl (s) = 1 ion(Na, +1) (aq) + 1 ion(Cl, -1) (aq)".ce.isBalanced
+      "1 NaCl (s) = 1 Na{+1} (aq) + 1 Cl{-1} (aq)".ce.isBalanced
     }
 
     // Weak electrolyte: acetic acid
 
     assertResult(true) {
-      "1 CH3COOH (l) + 1 H2O (l) = 1 ion(CH3COO, -1) (aq) + 1 ion(H3O, +1) (aq)".ce.isBalanced
+      "1 CH3COOH (l) + 1 H2O (l) = 1 CH3COO{-1} (aq) + 1 H3O{+1} (aq)".ce.isBalanced
     }
 
     // Non-electrolyte: simple sugar
@@ -168,13 +168,13 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Below are the solubility rules (in water), from
     // https://chem.libretexts.org/Bookshelves/Physical_and_Theoretical_Chemistry_Textbook_Maps/Supplemental_Modules_(Physical_and_Theoretical_Chemistry)/Equilibria/Solubilty/Solubility_Rules
 
-    // 1. Salts containing group 1 elements (ion(Li, +1), ion(Na, +1), ion(K, +1) etc.) are soluble. So are salts containing the ammonium ion.
+    // 1. Salts containing group 1 elements (Li{+1}, Na{+1}, K{+1} etc.) are soluble. So are salts containing the ammonium ion.
     // 2. Salts containing the nitrate ion are generally soluble.
     // 3. Salts containing the chloride, bromide and iodide anions are generally soluble. Exceptions are halide salts of silver, lead and mercury.
     // 4. Most silver salts are insoluble, but exceptions are AgNO3 and Ag(C2H3O2).
     // 5. Most sulfate salts are soluble, but exceptions include CaSO4, BaSO4, PbSO4, Ag2SO4 and SrSO4.
     // 6. Most hydroxide salts are only slightly soluble. Hydroxide salts of group 1 elements are soluble, and those of group 2 elements are slightly soluble.
-    //    Those of transition metals and ion(Al, +3) are insoluble.
+    //    Those of transition metals and Al{+3} are insoluble.
     // 7. Most sulfides (that is, sulfides, not sulfites) of transition metals are insoluble, and so are sulfides of arsenic, antimony, bismuth and lead.
     //    According to the chemistry course from the University of Kentucky, exceptions are sulfides of calcium, strontium (Sr) and barium, that are all soluble in water to a limited extent.
     // 8. Carbonates are generally insoluble, in particular group 2 carbonates and FeCO3 and PbCO3.
@@ -221,12 +221,12 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     // Write the aqueous substances as ions, in an ionic equation
     val ionicCe =
-      "2 ion(NH4, 1) (aq) + 1 ion(S, -2) (aq) + 1 ion(Cu, 2) (aq) + 2 ion(NO3, -1) (aq) = 2 ion(NH4, 1) (aq) + 2 ion(NO3, -1) (aq) + 1 CuS (s)".ce // with spectator ions
+      "2 NH4{1} (aq) + 1 S{-2} (aq) + 1 Cu{2} (aq) + 2 NO3{-1} (aq) = 2 NH4{1} (aq) + 2 NO3{-1} (aq) + 1 CuS (s)".ce // with spectator ions
     assertResult(true)(ionicCe.isBalanced)
 
     val netIonicCe = ionicCe.withoutDuplicates
 
-    assertResult("1 ion(S, -2) (aq) + 1 ion(Cu, 2) (aq) = 1 CuS (s)".ce) {
+    assertResult("1 S{-2} (aq) + 1 Cu{2} (aq) = 1 CuS (s)".ce) {
       netIonicCe
     }
     assertResult(true)(netIonicCe.isBalanced)
@@ -238,12 +238,12 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     // Write the aqueous substances as ions, in an ionic equation
     val ionicCe1 =
-      "2 ion(K, 1) (aq) + 1 ion(CO3, -2) (aq) + 1 ion(Cu, 2) (aq) + 2 ion(NO3, -1) (aq) = 2 ion(K, 1) (aq) + 2 ion(NO3, -1) (aq) + 1 CuCO3 (s)".ce // with spectator ions
+      "2 K{1} (aq) + 1 CO3{-2} (aq) + 1 Cu{2} (aq) + 2 NO3{-1} (aq) = 2 K{1} (aq) + 2 NO3{-1} (aq) + 1 CuCO3 (s)".ce // with spectator ions
     assertResult(true)(ionicCe1.isBalanced)
 
     val netIonicCe1 = ionicCe1.withoutDuplicates
 
-    assertResult("1 ion(CO3, -2) (aq) + 1 ion(Cu, 2) (aq) = 1 CuCO3 (s)".ce) {
+    assertResult("1 CO3{-2} (aq) + 1 Cu{2} (aq) = 1 CuCO3 (s)".ce) {
       netIonicCe1
     }
     assertResult(true)(netIonicCe1.isBalanced)
@@ -258,13 +258,13 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     // Bases typically have bitter taste, are slippery (e.g. soaps), cause color changes in plant dyes, and aqueous base solutions conduct electricity.
 
-    // Arrhenius acid: substance that produces ion(H, 1) (hydronium: ion(H3O, 1)) in water.
+    // Arrhenius acid: substance that produces H{1} (hydronium: H3O{1}) in water.
     // Arrhenius base: substance that produces hydroxide anion in water.
 
-    val arrheniusAcidCe = "1 HCl + 1 H2O = 1 ion(H3O, +1) + 1 ion(Cl, -1)".ce
+    val arrheniusAcidCe = "1 HCl + 1 H2O = 1 H3O{+1} + 1 Cl{-1}".ce
     assertResult(true)(arrheniusAcidCe.isBalanced)
 
-    val arrheniusBaseCe = "1 NH3 + 1 H2O = 1 ion(NH4, +1) + 1 ion(OH, -1)".ce
+    val arrheniusBaseCe = "1 NH3 + 1 H2O = 1 NH4{+1} + 1 OH{-1}".ce
     assertResult(true)(arrheniusBaseCe.isBalanced)
 
     // Bronsted acid: proton donor. More generic than Arrhenius acid.
@@ -272,7 +272,7 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Typical "Bronsted acid/base reactions" both turn a base into an acid, and an acid into a base.
 
     // Acid-base neutralization reaction: between acid and base, producing salt and water. Salts are all strong electrolytes.
-    // At the equivalence point of the acid-base reaction the moles of ion(H, 1) and the moles of ion(OH, -1) are equal.
+    // At the equivalence point of the acid-base reaction the moles of H{1} and the moles of OH{-1} are equal.
 
     val ce1 = "1 HCl (aq) + 1 NaOH (aq) = 1 NaCl (aq) + 1 H2O (l)".ce
     assertResult(true)(ce1.isBalanced)
@@ -280,7 +280,7 @@ class SummarizeReactionsTest extends AnyFunSuite {
     val ce2 = "1 HBr (aq) + 1 KOH (aq) = 1 KBr (aq) + 1 H2O (l)".ce
     assertResult(true)(ce2.isBalanced)
 
-    val ce2NetIonic = "1 ion(H, +1) (aq) + 1 ion(OH, -1) (aq) = 1 H2O (l)".ce // The same for all such reactions
+    val ce2NetIonic = "1 H{+1} (aq) + 1 OH{-1} (aq) = 1 H2O (l)".ce // The same for all such reactions
     assertResult(true)(ce2NetIonic.isBalanced)
 
     val ce3 = "2 HNO3 (aq) + 1 Ba(OH)2 (aq) = 1 Ba(NO3)2 (aq) + 2 H2O (l)".ce
@@ -295,8 +295,8 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Oxidation is the loss of electrons, and reduction is the gain of electrons. Reduction indeed means: reduction of charge.
 
     // Free elements have oxidation number 0. For example: Li, Ni, O2, Cl2.
-    // Monatomic ions have the ionic charge as oxidation number. For example: ion(Li, 1), ion(F, -1), ion(Ti, 4).
-    // Oxygen has oxidation number -2. For example: MgO, TiO2. It has oxidation number -1 only in H2O2 and ion(O2, -2).
+    // Monatomic ions have the ionic charge as oxidation number. For example: Li{1}, F{-1}, Ti{4}.
+    // Oxygen has oxidation number -2. For example: MgO, TiO2. It has oxidation number -1 only in H2O2 and O2{-2}.
     // Hydrogen has oxidation number 1. For example: H2O, HCl. It has oxidation number -1 in binary metal compounds. For example: LiH, CaH2.
     // Fluorine has oxidation number -1. For example: HF, MgF2.
     // Other halides typically have oxidation number -1. For example: HCl, NaBr. Examples of positive values: KClO3, HIO4.
@@ -306,11 +306,11 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Oxidation numbers are typically integers but do not have to be integers.
 
     // SO2: S has oxidation number 4 and O has oxidation number -2.
-    // ion(Cr2O7, -2): Cr has oxidation number 6 and O has oxidation number -2.
-    // ion(NH4, 1): N has oxidation number -3 and H has oxidation number 1.
+    // Cr2O7{-2}: Cr has oxidation number 6 and O has oxidation number -2.
+    // NH4{1}: N has oxidation number -3 and H has oxidation number 1.
     // HClO4: H has oxidation number 1 and O has oxidation number -2 and Cl has oxidation number 7.
 
-    val ce1 = "1 Fe (s) + 1 ion(Cu, 2) (aq) = 1 ion(Fe, 2) (aq) + 1 Cu (s)".ce // consider the oxidation state changes
+    val ce1 = "1 Fe (s) + 1 Cu{2} (aq) = 1 Fe{2} (aq) + 1 Cu (s)".ce // consider the oxidation state changes
     assertResult(true)(ce1.isBalanced)
 
     // The 4 types of redox reactions are:

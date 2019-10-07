@@ -113,7 +113,7 @@ class FormulaTest extends AnyFunSuite {
   }
 
   test("testParseSingleAtomIonicFormula") {
-    val frmAsString = "ion(Na, 1)"
+    val frmAsString = "Na{1}"
     val frm = Formula(frmAsString)
 
     assertResult(true) {
@@ -134,7 +134,7 @@ class FormulaTest extends AnyFunSuite {
   }
 
   test("testParseIonicCompoundFormula") {
-    val frmAsString = Formula.Phosphate.show.ensuring(_ == "ion(PO4, -3)")
+    val frmAsString = Formula.Phosphate.show.ensuring(_ == "PO4{-3}")
     val frm = Formula(frmAsString)
 
     assertResult(false) {

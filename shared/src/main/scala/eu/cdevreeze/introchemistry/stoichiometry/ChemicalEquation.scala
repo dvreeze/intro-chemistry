@@ -24,7 +24,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * See the documentation of type ChemicalEquation for more information. For the terminology, see
  * https://chem.libretexts.org/Courses/College_of_Marin/Marin%3A_CHEM_114_-_Introductory_Chemistry_(Daubenmire).
  *
- * The string format of the chemical equation is to a large extent compatible with https://www.webqc.org/balance.php.
+ * The string format of the chemical equation is to a large extent compatible with the format used in https://www.webqc.org/balance.php.
  *
  * @author Chris de Vreeze
  */

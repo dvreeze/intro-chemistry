@@ -72,7 +72,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl (s) = 1 ion(Na, 1) (aq) + 1 ion(Cl, -1) (aq)"
+    val reactionAsString = "1 NaCl (s) = 1 Na{1} (aq) + 1 Cl{-1} (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
@@ -80,8 +80,8 @@ class ChemicalEquationTest extends AnyFunSuite {
     }
 
     assertResult(Seq(
-      FormulaQuantity(Formula("ion(Na, 1)"), Some(Phase.Aqueous), 1),
-      FormulaQuantity(Formula("ion(Cl, -1)"), Some(Phase.Aqueous), 1))) {
+      FormulaQuantity(Formula("Na{1}"), Some(Phase.Aqueous), 1),
+      FormulaQuantity(Formula("Cl{-1}"), Some(Phase.Aqueous), 1))) {
 
       reaction.products
     }
@@ -96,7 +96,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl (s) = 1 ion(Na, 1) (aq) + 2 ion(Cl, -1) (aq)"
+    val reactionAsString = "1 NaCl (s) = 1 Na{1} (aq) + 2 Cl{-1} (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
@@ -104,8 +104,8 @@ class ChemicalEquationTest extends AnyFunSuite {
     }
 
     assertResult(Seq(
-      FormulaQuantity(Formula("ion(Na, 1)"), Some(Phase.Aqueous), 1),
-      FormulaQuantity(Formula("ion(Cl, -1)"), Some(Phase.Aqueous), 2))) {
+      FormulaQuantity(Formula("Na{1}"), Some(Phase.Aqueous), 1),
+      FormulaQuantity(Formula("Cl{-1}"), Some(Phase.Aqueous), 2))) {
 
       reaction.products
     }
@@ -120,14 +120,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedWrtChargeIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl = 1 ion(Na, 1) + 1 ion(Cl, -3)"
+    val reactionAsString = "1 NaCl = 1 Na{1} + 1 Cl{-3}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Na, 1)"), None, 1), FormulaQuantity(Formula("ion(Cl, -3)"), None, 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("Na{1}"), None, 1), FormulaQuantity(Formula("Cl{-3}"), None, 1))) {
       reaction.products
     }
 
@@ -187,14 +187,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseOtherSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 CuCl2 = 1 ion(Cu, 2) + 2 ion(Cl, -1)"
+    val reactionAsString = "1 CuCl2 = 1 Cu{2} + 2 Cl{-1}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("CuCl2"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), None, 1), FormulaQuantity(Formula("ion(Cl, -1)"), None, 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("Cu{2}"), None, 1), FormulaQuantity(Formula("Cl{-1}"), None, 2))) {
       reaction.products
     }
 
@@ -208,14 +208,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseYetAnotherSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 CuSO4 = 1 ion(Cu, 2) + 1 ion(SO4, -2)"
+    val reactionAsString = "1 CuSO4 = 1 Cu{2} + 1 SO4{-2}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("CuSO4"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Cu, 2)"), None, 1), FormulaQuantity(Formula("ion(SO4, -2)"), None, 1))) {
+    assertResult(Seq(FormulaQuantity(Formula("Cu{2}"), None, 1), FormulaQuantity(Formula("SO4{-2}"), None, 1))) {
       reaction.products
     }
 
@@ -229,14 +229,14 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseRelativelySimpleIonicChemicalEquation") {
-    val reactionAsString = "1 Ba(C2H3O2)2 = 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)"
+    val reactionAsString = "1 Ba(C2H3O2)2 = 1 Ba{2} + 2 C2H3O2{-1}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("Ba(C2H3O2)2"), None, 1))) {
       reaction.reactants
     }
 
-    assertResult(Seq(FormulaQuantity(Formula("ion(Ba, 2)"), None, 1), FormulaQuantity(Formula("ion(C2H3O2, -1)"), None, 2))) {
+    assertResult(Seq(FormulaQuantity(Formula("Ba{2}"), None, 1), FormulaQuantity(Formula("C2H3O2{-1}"), None, 2))) {
       reaction.products
     }
 

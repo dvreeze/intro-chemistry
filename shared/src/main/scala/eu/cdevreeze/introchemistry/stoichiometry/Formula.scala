@@ -24,8 +24,10 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * is either an atomic element or molecular element. A compound can either represent a molecular compound or an ionic
  * compound, but this difference is invisible in formulas.
  *
+ * The string format of the formula is to a large extent compatible with the format used in https://www.webqc.org/balance.php.
+ *
  * Example (neutral) formulas as strings (format returned by method "show" and parsed by method "parse"):
- * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula: "ion(SO4, -2)".
+ * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula: "SO4{-2}".
  *
  * The term "formula" is used as described here:
  * https://chem.libretexts.org/Courses/College_of_Marin/Marin%3A_CHEM_114_-_Introductory_Chemistry_(Daubenmire). In this
@@ -40,7 +42,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * by sharing of electrons. Ionic compounds, on the other hand, are compounds consisting of a metal and non-metal, characterized
  * by a transfer of electrons instead of electron sharing. Again, these 2 kinds of chemical bonds are invisible in chemical formulas.
  *
- * TODO Formulas for hydrates, like CoCl2.6H2O, which we can now only write as CoCl2(H2O)6.
+ * TODO Formulas for hydrates, like CoCl2*6H2O, which we can now only write as CoCl2(H2O)6.
  *
  * @author Chris de Vreeze
  */
@@ -88,7 +90,7 @@ sealed trait IonFormula extends Formula {
 
   def isAnion: Boolean = charge < 0
 
-  final def show: String = s"ion(${underlyingNonIon.show}, $charge)"
+  final def show: String = s"${underlyingNonIon.show}{$charge}"
 }
 
 sealed trait ElementFormula extends NonIonFormula {
@@ -276,14 +278,13 @@ object Formula {
       }
     }
 
-    def formula[_: P]: P[Formula] = P(nonIon | ion)
+    def formula[_: P]: P[Formula] =
+      P(quantifiedFormulaPart.rep(1) ~ ionCharge.?).map {
+        case (parts, None) => NonIonFormula(parts)
+        case (parts, Some(charge)) => IonFormula(parts, charge)
+      }
 
-    def nonIon[_: P]: P[NonIonFormula] =
-      P(quantifiedFormulaPart.rep(1)).map { parts => NonIonFormula(parts) }
-
-    def ion[_: P]: P[IonFormula] =
-      P("ion" ~ "(" ~/ quantifiedFormulaPart.rep(1) ~ "," ~ " ".rep(0) ~ charge ~ ")")
-        .map { case (parts, charge) => IonFormula(parts, charge) }
+    def ionCharge[_: P]: P[Int] = P("{" ~ charge ~ "}")
 
     def quantifiedFormulaPart[_: P]: P[QuantifiedFormulaPart] =
       P(formulaPart ~ count.?).map { case (p, optCnt) => QuantifiedFormulaPart(p, optCnt.getOrElse(1)) }
@@ -305,49 +306,49 @@ object Formula {
 
   // Some well-know ionic formulas. Also see https://www.thoughtco.com/list-of-common-polyatomic-ions-603977.
 
-  val Hydroxide = Formula("ion(OH, -1)")
+  val Hydroxide = Formula("OH{-1}")
 
-  val Carbonate = Formula("ion(CO3, -2)")
-  val Bicarbonate = Formula("ion(HCO3, -1)") // also called hydrogen carbonate
+  val Carbonate = Formula("CO3{-2}")
+  val Bicarbonate = Formula("HCO3{-1}") // also called hydrogen carbonate
 
-  val Nitrate = Formula("ion(NO3, -1)")
-  val Nitrite = Formula("ion(NO2, -1)") // Nitrite has ONE LESS oxygen than nitrate, leaving the ion charge the same
+  val Nitrate = Formula("NO3{-1}")
+  val Nitrite = Formula("NO2{-1}") // Nitrite has ONE LESS oxygen than nitrate, leaving the ion charge the same
 
-  val Sulfate = Formula("ion(SO4, -2)")
-  val HydrogenSulfate = Formula("ion(HSO4, -1)") // also called bisulfate
-  val Sulfite = Formula("ion(SO3, -2)") // Sulfite has ONE LESS oxygen than sulfate, leaving the ion charge the same
-  val Thiosulfate = Formula("ion(S2O3, -2)")
+  val Sulfate = Formula("SO4{-2}")
+  val HydrogenSulfate = Formula("HSO4{-1}") // also called bisulfate
+  val Sulfite = Formula("SO3{-2}") // Sulfite has ONE LESS oxygen than sulfate, leaving the ion charge the same
+  val Thiosulfate = Formula("S2O3{-2}")
 
-  val Phosphate = Formula("ion(PO4, -3)")
-  val HydrogenPhosphate = Formula("ion(HPO4, -2)")
-  val DihydrogenPhosphate = Formula("ion(H2PO4, -1)")
+  val Phosphate = Formula("PO4{-3}")
+  val HydrogenPhosphate = Formula("HPO4{-2}")
+  val DihydrogenPhosphate = Formula("H2PO4{-1}")
 
-  val Cyanide = Formula("ion(CN, -1)")
-  val Acetate = Formula("ion(C2H3O2, -1)") // Could also be written as: ion(CH3CO2, -1)
+  val Cyanide = Formula("CN{-1}")
+  val Acetate = Formula("C2H3O2{-1}") // Could also be written as: CH3CO2{-1}
 
-  val Hydronium = Formula("ion(H3O, +1)")
-  val Ammonium = Formula("ion(NH4, +1)")
+  val Hydronium = Formula("H3O{+1}")
+  val Ammonium = Formula("NH4{+1}")
 
   // Other somewhat well-known ionic formulas
 
-  val Bromate = Formula("ion(BrO3, -1)")
+  val Bromate = Formula("BrO3{-1}")
 
-  val Chlorate = Formula("ion(ClO3, -1)")
-  val Perchlorate = Formula("ion(ClO4, -1)") // Perchlorate has ONE MORE oxygen than chlorate, leaving the charge the same
-  val Chlorite = Formula("ion(ClO2, -1)") // Chlorite has ONE LESS oxygen than chlorate, leaving the ion charge the same
-  val Hypochlorite = Formula("ion(ClO, -1)") // Hypochlorite has TWO LESS oxygen than chlorate, leaving the ion charge the same
+  val Chlorate = Formula("ClO3{-1}")
+  val Perchlorate = Formula("ClO4{-1}") // Perchlorate has ONE MORE oxygen than chlorate, leaving the charge the same
+  val Chlorite = Formula("ClO2{-1}") // Chlorite has ONE LESS oxygen than chlorate, leaving the ion charge the same
+  val Hypochlorite = Formula("ClO{-1}") // Hypochlorite has TWO LESS oxygen than chlorate, leaving the ion charge the same
 
-  val Chromate = Formula("ion(CrO4, -2)")
-  val Dichromate = Formula("ion(Cr2O7, -2)")
+  val Chromate = Formula("CrO4{-2}")
+  val Dichromate = Formula("Cr2O7{-2}")
 
-  val Permanganate = Formula("ion(MnO4, -1)")
+  val Permanganate = Formula("MnO4{-1}")
 
-  val Peroxide = Formula("ion(O2, -2)") // Peroxide has ONE MORE oxygen than oxide, leaving the charge the same.
+  val Peroxide = Formula("O2{-2}") // Peroxide has ONE MORE oxygen than oxide, leaving the charge the same.
 
-  val Cyanate = Formula("ion(OCN, -1)")
-  val Thiocyanate = Formula("ion(SCN, -1)")
+  val Cyanate = Formula("OCN{-1}")
+  val Thiocyanate = Formula("SCN{-1}")
 
-  val Borate = Formula("ion(BO3, -3)")
+  val Borate = Formula("BO3{-3}")
 
   val WellKnownPolyatomicIons: Map[String, Formula] = {
     Map(
