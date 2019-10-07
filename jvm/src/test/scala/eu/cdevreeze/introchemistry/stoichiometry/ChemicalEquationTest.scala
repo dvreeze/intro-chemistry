@@ -51,7 +51,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedChemicalEquation") {
-    val reactionAsString = "4 Fe (s) + 1 O2 (g) = 2 Fe2O3 (s)"
+    val reactionAsString = "4 Fe (s) + O2 (g) = 2 Fe2O3 (s)"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("Fe"), Some(Phase.Solid), 4), FormulaQuantity(Formula("O2"), Some(Phase.Gas), 1))) {
@@ -72,7 +72,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl (s) = 1 Na{1} (aq) + 1 Cl{-1} (aq)"
+    val reactionAsString = "NaCl (s) = Na{1} (aq) + Cl{-1} (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
@@ -96,7 +96,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl (s) = 1 Na{1} (aq) + 2 Cl{-1} (aq)"
+    val reactionAsString = "NaCl (s) = Na{1} (aq) + 2 Cl{-1} (aq)"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), Some(Phase.Solid), 1))) {
@@ -120,7 +120,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseSimpleUnbalancedWrtChargeIonicChemicalEquation") {
-    val reactionAsString = "1 NaCl = 1 Na{1} + 1 Cl{-3}"
+    val reactionAsString = "NaCl = Na{1} + Cl{-3}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("NaCl"), None, 1))) {
@@ -141,7 +141,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseRelativelySimpleChemicalEquation") {
-    val reactionAsString = "1 C6H12O6 + 6 O2 = 6 CO2 + 6 H2O"
+    val reactionAsString = "C6H12O6 + 6 O2 = 6 CO2 + 6 H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), None, 1), FormulaQuantity(Formula("O2"), None, 6))) {
@@ -162,7 +162,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseRelativelySimpleUnbalancedChemicalEquation") {
-    val reactionAsString = "1 C6H12O6 + 6 O2 = 4 CO2 + 6 H2O"
+    val reactionAsString = "C6H12O6 + 6 O2 = 4 CO2 + 6 H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("C6H12O6"), None, 1), FormulaQuantity(Formula("O2"), None, 6))) {
@@ -187,7 +187,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseOtherSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 CuCl2 = 1 Cu{2} + 2 Cl{-1}"
+    val reactionAsString = "CuCl2 = Cu{2} + 2 Cl{-1}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("CuCl2"), None, 1))) {
@@ -208,7 +208,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseYetAnotherSimpleIonicChemicalEquation") {
-    val reactionAsString = "1 CuSO4 = 1 Cu{2} + 1 SO4{-2}"
+    val reactionAsString = "CuSO4 = Cu{2} + SO4{-2}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("CuSO4"), None, 1))) {
@@ -229,7 +229,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseRelativelySimpleIonicChemicalEquation") {
-    val reactionAsString = "1 Ba(C2H3O2)2 = 1 Ba{2} + 2 C2H3O2{-1}"
+    val reactionAsString = "Ba(C2H3O2)2 = Ba{2} + 2 C2H3O2{-1}"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(FormulaQuantity(Formula("Ba(C2H3O2)2"), None, 1))) {
@@ -250,7 +250,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseComplexChemicalEquation") {
-    val reactionAsString = "1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
+    val reactionAsString = "Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(
@@ -275,7 +275,7 @@ class ChemicalEquationTest extends AnyFunSuite {
   }
 
   test("testParseComplexUnbalancedChemicalEquation") {
-    val reactionAsString = "1 Ca5(PO24)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
+    val reactionAsString = "Ca5(PO24)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
     val reaction = ChemicalEquation(reactionAsString)
 
     assertResult(Seq(

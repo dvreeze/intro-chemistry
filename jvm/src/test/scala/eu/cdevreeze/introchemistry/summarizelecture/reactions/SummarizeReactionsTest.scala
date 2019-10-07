@@ -36,7 +36,7 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Reaction of sodium bicarbonate ("baking soda") and acetic acid ("vinegar"), yielding hydrogen oxide (water) and
     // carbon dioxide.
 
-    val ce1 = "1 NaHCO3 + 1 HC2H3O2 = 1 NaC2H3O2 + 1 H2O + 1 CO2".ce
+    val ce1 = "NaHCO3 + HC2H3O2 = NaC2H3O2 + H2O + CO2".ce
 
     assertResult(true) {
       ce1.isBalanced
@@ -44,25 +44,25 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     // Combustion reaction of methane. Combustion uses oxygen, and yields carbon dioxide and water.
 
-    val rawCe2 = "1 CH4 (g) + 1 O2 (g) = 1 CO2 (g) + 1 H2O (l)".ce
+    val rawCe2 = "CH4 (g) + O2 (g) = CO2 (g) + H2O (l)".ce
     val ce2 = tryToBalanceChemicalEquation(rawCe2).get
 
-    assertResult("1 CH4 (g) + 2 O2 (g) = 1 CO2 (g) + 2 H2O (l)".ce) {
+    assertResult("CH4 (g) + 2 O2 (g) = CO2 (g) + 2 H2O (l)".ce) {
       ce2
     }
 
     // Reaction of silicon tetrachloride and water, yielding silicon dioxide and hydrochloric acid.
 
-    val rawCe3 = "1 SiCl4 + 1 H2O = 1 SiO2 + 1 HCl".ce
+    val rawCe3 = "SiCl4 + H2O = SiO2 + HCl".ce
     val ce3 = tryToBalanceChemicalEquation(rawCe3).get
 
-    assertResult("1 SiCl4 + 2 H2O = 1 SiO2 + 4 HCl".ce) {
+    assertResult("SiCl4 + 2 H2O = SiO2 + 4 HCl".ce) {
       ce3
     }
 
     // Reaction of iron and oxygen.
 
-    val rawCe4 = "1 Fe + 1 O2 = 1 Fe2O3".ce
+    val rawCe4 = "Fe + O2 = Fe2O3".ce
     val ce4 = tryToBalanceChemicalEquation(rawCe4).get
 
     assertResult("4 Fe + 3 O2 = 2 Fe2O3".ce) {
@@ -72,39 +72,39 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
   test("writingBalancedChemicalEquationsExercise") {
     val rawEquations: Seq[ChemicalEquation] = Seq(
-      "1 NaBr + 1 F2 = 1 NaF + 1 Br2",
-      "1 K + 1 H2O = 1 KOH + 1 H2",
-      "1 H2O2 = 1 H2O + 1 O2",
-      "1 CuSO4 + 1 KCN = 1 Cu(CN)2 + 1 K2SO4",
-      "1 P4 + 1 O2 = 1 P4O6",
-      "1 CH4 + 1 O2 = 1 CO2 + 1 H2O",
-      "1 N2 + 1 F2 = 1 NF3",
-      "1 AlBr3 + 1 K2SO4 = 1 KBr + 1 Al2(SO4)3",
-      "1 K + 1 Cl2 = 1 KCl",
-      "1 Al (s) + 1 HCl (aq) = 1 H2 (g) + 1 AlCl3 (aq)",
-      "1 N2 (g) + 1 H2 (g) = 1 NH3 (g)",
-      "1 C2H6 + 1 O2 = 1 CO2 + 1 H2O",
-      "1 C3H8 + 1 O2 = 1 CO2 + 1 H2O",
-      "1 C4H10 + 1 O2 = 1 CO2 + 1 H2O",
-      "1 C13H28 + 1 O2 = 1 CO2 + 1 H2O",
+      "NaBr + F2 = NaF + Br2",
+      "K + H2O = KOH + H2",
+      "H2O2 = H2O + O2",
+      "CuSO4 + KCN = Cu(CN)2 + K2SO4",
+      "P4 + O2 = P4O6",
+      "CH4 + O2 = CO2 + H2O",
+      "N2 + F2 = NF3",
+      "AlBr3 + K2SO4 = KBr + Al2(SO4)3",
+      "K + Cl2 = KCl",
+      "Al (s) + HCl (aq) = H2 (g) + AlCl3 (aq)",
+      "N2 (g) + H2 (g) = NH3 (g)",
+      "C2H6 + O2 = CO2 + H2O",
+      "C3H8 + O2 = CO2 + H2O",
+      "C4H10 + O2 = CO2 + H2O",
+      "C13H28 + O2 = CO2 + H2O",
     ).map(s => s.ce)
 
     val expectedEquations: Seq[ChemicalEquation] = Seq(
-      "2 NaBr + 1 F2 = 2 NaF + 1 Br2",
-      "2 K + 2 H2O = 2 KOH + 1 H2",
-      "2 H2O2 = 2 H2O + 1 O2",
-      "1 CuSO4 + 2 KCN = 1 Cu(CN)2 + 1 K2SO4",
-      "1 P4 + 3 O2 = 1 P4O6",
-      "1 CH4 + 2 O2 = 1 CO2 + 2 H2O",
-      "1 N2 + 3 F2 = 2 NF3",
-      "2 AlBr3 + 3 K2SO4 = 6 KBr + 1 Al2(SO4)3",
-      "2 K + 1 Cl2 = 2 KCl",
+      "2 NaBr + F2 = 2 NaF + Br2",
+      "2 K + 2 H2O = 2 KOH + H2",
+      "2 H2O2 = 2 H2O + O2",
+      "CuSO4 + 2 KCN = Cu(CN)2 + K2SO4",
+      "P4 + 3 O2 = P4O6",
+      "CH4 + 2 O2 = CO2 + 2 H2O",
+      "N2 + 3 F2 = 2 NF3",
+      "2 AlBr3 + 3 K2SO4 = 6 KBr + Al2(SO4)3",
+      "2 K + Cl2 = 2 KCl",
       "2 Al (s) + 6 HCl (aq) = 3 H2 (g) + 2 AlCl3 (aq)",
-      "1 N2 (g) + 3 H2 (g) = 2 NH3 (g)",
+      "N2 (g) + 3 H2 (g) = 2 NH3 (g)",
       "2 C2H6 + 7 O2 = 4 CO2 + 6 H2O",
-      "1 C3H8 + 5 O2 = 3 CO2 + 4 H2O",
+      "C3H8 + 5 O2 = 3 CO2 + 4 H2O",
       "2 C4H10 + 13 O2 = 8 CO2 + 10 H2O",
-      "1 C13H28 + 20 O2 = 13 CO2 + 14 H2O",
+      "C13H28 + 20 O2 = 13 CO2 + 14 H2O",
     ).map(s => s.ce.ensuring(ce => ce.isBalanced))
 
     assertResult(expectedEquations) {
@@ -127,19 +127,19 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Strong electrolyte: table salt
 
     assertResult(true) {
-      "1 NaCl (s) = 1 Na{+1} (aq) + 1 Cl{-1} (aq)".ce.isBalanced
+      "NaCl (s) = Na{+1} (aq) + Cl{-1} (aq)".ce.isBalanced
     }
 
     // Weak electrolyte: acetic acid
 
     assertResult(true) {
-      "1 CH3COOH (l) + 1 H2O (l) = 1 CH3COO{-1} (aq) + 1 H3O{+1} (aq)".ce.isBalanced
+      "CH3COOH (l) + H2O (l) = CH3COO{-1} (aq) + H3O{+1} (aq)".ce.isBalanced
     }
 
     // Non-electrolyte: simple sugar
 
     assertResult(true) {
-      "1 C6H12O6 (s) = 1 C6H12O6 (aq)".ce.isBalanced
+      "C6H12O6 (s) = C6H12O6 (aq)".ce.isBalanced
     }
 
     // Strong electrolytes are ionic compounds, and for example HCl, HNO3, HClO4 and NaOH.
@@ -200,13 +200,13 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Copper(II) sulfide precipitate
 
     assertResult(true) {
-      "1 (NH4)2S (aq) + 1 Cu(NO3)2 (aq) = 2 (NH4)(NO3) (aq) + 1 CuS (s)".ce.isBalanced
+      "(NH4)2S (aq) + Cu(NO3)2 (aq) = 2 (NH4)(NO3) (aq) + CuS (s)".ce.isBalanced
     }
 
     // No reaction, no precipitation
 
     assertResult(true) {
-      "1 Na2SO4 (aq) + 1 MgCl2 (aq) = 1 MgSO4 (aq) + 2 NaCl (aq)".ce.isBalanced
+      "Na2SO4 (aq) + MgCl2 (aq) = MgSO4 (aq) + 2 NaCl (aq)".ce.isBalanced
     }
   }
 
@@ -216,41 +216,41 @@ class SummarizeReactionsTest extends AnyFunSuite {
 
     // Precipitation of copper(II) sulfide
 
-    val molecularCe = "1 (NH4)2S (aq) + 1 Cu(NO3)2 (aq) = 2 NH4NO3 (aq) + 1 CuS (s)".ce
+    val molecularCe = "(NH4)2S (aq) + Cu(NO3)2 (aq) = 2 NH4NO3 (aq) + CuS (s)".ce
     assertResult(true)(molecularCe.isBalanced)
 
     // Write the aqueous substances as ions, in an ionic equation
     val ionicCe =
-      "2 NH4{1} (aq) + 1 S{-2} (aq) + 1 Cu{2} (aq) + 2 NO3{-1} (aq) = 2 NH4{1} (aq) + 2 NO3{-1} (aq) + 1 CuS (s)".ce // with spectator ions
+      "2 NH4{1} (aq) + S{-2} (aq) + Cu{2} (aq) + 2 NO3{-1} (aq) = 2 NH4{1} (aq) + 2 NO3{-1} (aq) + CuS (s)".ce // with spectator ions
     assertResult(true)(ionicCe.isBalanced)
 
     val netIonicCe = ionicCe.withoutDuplicates
 
-    assertResult("1 S{-2} (aq) + 1 Cu{2} (aq) = 1 CuS (s)".ce) {
+    assertResult("S{-2} (aq) + Cu{2} (aq) = CuS (s)".ce) {
       netIonicCe
     }
     assertResult(true)(netIonicCe.isBalanced)
 
     // Precipitation of copper(II) carbonate
 
-    val molecularCe1 = "1 K2CO3 (aq) + 1 Cu(NO3)2 (aq) = 2 KNO3 (aq) + 1 CuCO3 (s)".ce
+    val molecularCe1 = "K2CO3 (aq) + Cu(NO3)2 (aq) = 2 KNO3 (aq) + CuCO3 (s)".ce
     assertResult(true)(molecularCe1.isBalanced)
 
     // Write the aqueous substances as ions, in an ionic equation
     val ionicCe1 =
-      "2 K{1} (aq) + 1 CO3{-2} (aq) + 1 Cu{2} (aq) + 2 NO3{-1} (aq) = 2 K{1} (aq) + 2 NO3{-1} (aq) + 1 CuCO3 (s)".ce // with spectator ions
+      "2 K{1} (aq) + CO3{-2} (aq) + Cu{2} (aq) + 2 NO3{-1} (aq) = 2 K{1} (aq) + 2 NO3{-1} (aq) + CuCO3 (s)".ce // with spectator ions
     assertResult(true)(ionicCe1.isBalanced)
 
     val netIonicCe1 = ionicCe1.withoutDuplicates
 
-    assertResult("1 CO3{-2} (aq) + 1 Cu{2} (aq) = 1 CuCO3 (s)".ce) {
+    assertResult("CO3{-2} (aq) + Cu{2} (aq) = CuCO3 (s)".ce) {
       netIonicCe1
     }
     assertResult(true)(netIonicCe1.isBalanced)
   }
 
   test("acidBaseReactions") {
-    val ce = "1 CaCO3 (s) + 1 H2SO4 (aq) = 1 CaSO4 (s) + 1 H2O (l) + 1 CO2 (g)".ce
+    val ce = "CaCO3 (s) + H2SO4 (aq) = CaSO4 (s) + H2O (l) + CO2 (g)".ce
     assertResult(true)(ce.isBalanced)
 
     // Acids typically have sour taste, cause color changes in plant dyes, react with some metals to produce hydrogen gas,
@@ -261,10 +261,10 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Arrhenius acid: substance that produces H{1} (hydronium: H3O{1}) in water.
     // Arrhenius base: substance that produces hydroxide anion in water.
 
-    val arrheniusAcidCe = "1 HCl + 1 H2O = 1 H3O{+1} + 1 Cl{-1}".ce
+    val arrheniusAcidCe = "HCl + H2O = H3O{+1} + Cl{-1}".ce
     assertResult(true)(arrheniusAcidCe.isBalanced)
 
-    val arrheniusBaseCe = "1 NH3 + 1 H2O = 1 NH4{+1} + 1 OH{-1}".ce
+    val arrheniusBaseCe = "NH3 + H2O = NH4{+1} + OH{-1}".ce
     assertResult(true)(arrheniusBaseCe.isBalanced)
 
     // Bronsted acid: proton donor. More generic than Arrhenius acid.
@@ -274,16 +274,16 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Acid-base neutralization reaction: between acid and base, producing salt and water. Salts are all strong electrolytes.
     // At the equivalence point of the acid-base reaction the moles of H{1} and the moles of OH{-1} are equal.
 
-    val ce1 = "1 HCl (aq) + 1 NaOH (aq) = 1 NaCl (aq) + 1 H2O (l)".ce
+    val ce1 = "HCl (aq) + NaOH (aq) = NaCl (aq) + H2O (l)".ce
     assertResult(true)(ce1.isBalanced)
 
-    val ce2 = "1 HBr (aq) + 1 KOH (aq) = 1 KBr (aq) + 1 H2O (l)".ce
+    val ce2 = "HBr (aq) + KOH (aq) = KBr (aq) + H2O (l)".ce
     assertResult(true)(ce2.isBalanced)
 
-    val ce2NetIonic = "1 H{+1} (aq) + 1 OH{-1} (aq) = 1 H2O (l)".ce // The same for all such reactions
+    val ce2NetIonic = "H{+1} (aq) + OH{-1} (aq) = H2O (l)".ce // The same for all such reactions
     assertResult(true)(ce2NetIonic.isBalanced)
 
-    val ce3 = "2 HNO3 (aq) + 1 Ba(OH)2 (aq) = 1 Ba(NO3)2 (aq) + 2 H2O (l)".ce
+    val ce3 = "2 HNO3 (aq) + Ba(OH)2 (aq) = Ba(NO3)2 (aq) + 2 H2O (l)".ce
     assertResult(true)(ce3.isBalanced)
   }
 
@@ -310,14 +310,14 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // NH4{1}: N has oxidation number -3 and H has oxidation number 1.
     // HClO4: H has oxidation number 1 and O has oxidation number -2 and Cl has oxidation number 7.
 
-    val ce1 = "1 Fe (s) + 1 Cu{2} (aq) = 1 Fe{2} (aq) + 1 Cu (s)".ce // consider the oxidation state changes
+    val ce1 = "Fe (s) + Cu{2} (aq) = Fe{2} (aq) + Cu (s)".ce // consider the oxidation state changes
     assertResult(true)(ce1.isBalanced)
 
     // The 4 types of redox reactions are:
     // 1. combination
     // 2. decomposition
-    // 3. displacement (for example: 2 KI + 1 Cl2 = 2 KCl + I2)
-    // 4. disproportionation (for example: 2 H2O2 = 1 H2O + 1 O2)
+    // 3. displacement (for example: 2 KI + Cl2 = 2 KCl + I2)
+    // 4. disproportionation (for example: 2 H2O2 = H2O + O2)
     // Note that not all disproportionation reactions are redox reactions.
   }
 
@@ -325,10 +325,10 @@ class SummarizeReactionsTest extends AnyFunSuite {
     // Specific types of redox reactions: combustion reactions.
     // Combustion reactions are reactions of hydrocarbons (species containing H and C) and oxygen, yielding CO2 and water.
 
-    val ce1 = "1 C3H8 + 5 O2 = 4 H2O + 3 CO2".ce // propane combustion
+    val ce1 = "C3H8 + 5 O2 = 4 H2O + 3 CO2".ce // propane combustion
     assertResult(true)(ce1.isBalanced)
 
-    val ce2 = "1 C2H4 + 3 O2 = 2 H2O + 2 CO2".ce // ethene combustion
+    val ce2 = "C2H4 + 3 O2 = 2 H2O + 2 CO2".ce // ethene combustion
     assertResult(true)(ce2.isBalanced)
   }
 }

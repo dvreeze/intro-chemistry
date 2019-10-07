@@ -87,8 +87,9 @@ object ChemicalEquation {
 
     def show: String = {
       val phaseString = phaseOption.map(ph => s"($ph)").getOrElse("")
+      val quantityString = if (quantity == 1) "" else quantity.toString + " "
 
-      s"$quantity ${formula.show} $phaseString".trim
+      s"$quantityString${formula.show} $phaseString".trim
     }
 
     def withQuantity(newQuantity: Int): FormulaQuantity = this.copy(quantity = newQuantity)
@@ -122,8 +123,8 @@ object ChemicalEquation {
     def product[_: P]: P[FormulaQuantity] = P(formulaQuantity)
 
     def formulaQuantity[_: P]: P[FormulaQuantity] =
-      P(count ~/ Formula.Parser.formula ~ phase.?)
-        .map { case (cnt, f, phaseOpt) => FormulaQuantity(f, phaseOpt, cnt) }
+      P(count.? ~ Formula.Parser.formula ~ phase.?)
+        .map { case (cntOpt, f, phaseOpt) => FormulaQuantity(f, phaseOpt, cntOpt.getOrElse(1)) }
 
     def phase[_: P]: P[Phase] = P("(" ~ ("s" | "l" | "g" | "aq").! ~ ")").map(s => Phase.parse(s))
 
