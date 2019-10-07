@@ -24,6 +24,8 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  * See the documentation of type ChemicalEquation for more information. For the terminology, see
  * https://chem.libretexts.org/Courses/College_of_Marin/Marin%3A_CHEM_114_-_Introductory_Chemistry_(Daubenmire).
  *
+ * The string format of the chemical equation is to a large extent compatible with https://www.webqc.org/balance.php.
+ *
  * @author Chris de Vreeze
  */
 final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantity], products: Seq[ChemicalEquation.FormulaQuantity]) {
@@ -74,7 +76,7 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
    * Returns the string representation from which the same reaction equation can be parsed.
    */
   def show: String = {
-    s"${reactants.map(_.show).mkString(" + ")} --> ${products.map(_.show).mkString(" + ")}"
+    s"${reactants.map(_.show).mkString(" + ")} = ${products.map(_.show).mkString(" + ")}"
   }
 }
 
@@ -112,7 +114,7 @@ object ChemicalEquation {
     }
 
     def chemicalEquation[_: P]: P[ChemicalEquation] =
-      P(reactant.rep(min = 1, sep = "+"./) ~ "-->" ~ product.rep(min = 1, sep = "+"./))
+      P(reactant.rep(min = 1, sep = "+"./) ~ "=" ~ product.rep(min = 1, sep = "+"./))
         .map { case (reacts, prods) => ChemicalEquation(reacts, prods) }
 
     def reactant[_: P]: P[FormulaQuantity] = P(formulaQuantity)

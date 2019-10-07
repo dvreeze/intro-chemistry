@@ -30,11 +30,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   private val stoichiometrySupport = StoichiometrySupport(PeriodicTableLoader.newInstance().loadPeriodicTable())
 
   test("testBalanceSimpleChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 Fe (s) + 1 O2 (g) --> 1 Fe2O3 (s)").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 Fe (s) + 1 O2 (g) = 1 Fe2O3 (s)").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("4 Fe (s) + 3 O2 (g) --> 2 Fe2O3 (s)")
+    val expectedReaction = ChemicalEquation("4 Fe (s) + 3 O2 (g) = 2 Fe2O3 (s)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -42,11 +42,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceSimpleIonicChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 NaCl (s) --> 1 ion(Na, 1) (aq) + 123 ion(Cl, -1) (aq)").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 NaCl (s) = 1 ion(Na, 1) (aq) + 123 ion(Cl, -1) (aq)").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 NaCl (s) --> 1 ion(Na, 1) (aq) + 1 ion(Cl, -1) (aq)")
+    val expectedReaction = ChemicalEquation("1 NaCl (s) = 1 ion(Na, 1) (aq) + 1 ion(Cl, -1) (aq)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -54,11 +54,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceRelativelySimpleChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 C6H12O6 + 1 O2 --> 1 CO2 + 1 H2O").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 C6H12O6 + 1 O2 = 1 CO2 + 1 H2O").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 C6H12O6 + 6 O2 --> 6 CO2 + 6 H2O")
+    val expectedReaction = ChemicalEquation("1 C6H12O6 + 6 O2 = 6 CO2 + 6 H2O")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -66,11 +66,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceOtherSimpleIonicChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 CuCl2 --> 1 ion(Cu, 2) + 1 ion(Cl, -1)").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 CuCl2 = 1 ion(Cu, 2) + 1 ion(Cl, -1)").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 CuCl2 --> 1 ion(Cu, 2) + 2 ion(Cl, -1)")
+    val expectedReaction = ChemicalEquation("1 CuCl2 = 1 ion(Cu, 2) + 2 ion(Cl, -1)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -78,11 +78,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceRelativelySimpleIonicChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 Ba(C2H3O2)2 --> 1 ion(Ba, 2) + 1 ion(C2H3O2, -1)").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 Ba(C2H3O2)2 = 1 ion(Ba, 2) + 1 ion(C2H3O2, -1)").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 Ba(C2H3O2)2 --> 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)")
+    val expectedReaction = ChemicalEquation("1 Ba(C2H3O2)2 = 1 ion(Ba, 2) + 2 ion(C2H3O2, -1)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -90,11 +90,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceComplexChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 Ca5(PO4)3OH + 1 H3PO4 + 1 H2O --> 1 Ca(H2PO4)2H2O").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 Ca5(PO4)3OH + 1 H3PO4 + 1 H2O = 1 Ca(H2PO4)2H2O").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O --> 5 Ca(H2PO4)2H2O")
+    val expectedReaction = ChemicalEquation("1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -102,11 +102,11 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   }
 
   test("testBalanceOtherChemicalEquation") {
-    val unbalancedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) --> 1 Cu(CO3) (s) + 1 K(NO3) (aq)").ensuring(!_.isBalanced)
+    val unbalancedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) = 1 Cu(CO3) (s) + 1 K(NO3) (aq)").ensuring(!_.isBalanced)
 
     val balancedReactionOption: Option[ChemicalEquation] = stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction)
 
-    val expectedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) --> 1 Cu(CO3) (s) + 2 K(NO3) (aq)")
+    val expectedReaction = ChemicalEquation("1 Cu(NO3)2 (aq) + 1 K2CO3 (aq) = 1 Cu(CO3) (s) + 2 K(NO3) (aq)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
@@ -116,12 +116,12 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
   test("testBalanceOtherIonicChemicalEquation") {
     val rawReaction =
       ChemicalEquation(
-        "1 ion(Cu, 2) (aq) + 1 ion(NO3, -1) (aq) + 1 ion(K, 1) (aq) + 1 ion(CO3, -2) (aq) --> 1 CuCO3 (s) + 1 ion(K, 1) (aq) + 1 ion(NO3, -1) (aq)")
+        "1 ion(Cu, 2) (aq) + 1 ion(NO3, -1) (aq) + 1 ion(K, 1) (aq) + 1 ion(CO3, -2) (aq) = 1 CuCO3 (s) + 1 ion(K, 1) (aq) + 1 ion(NO3, -1) (aq)")
 
     val balancedReactionOption: Option[ChemicalEquation] =
       stoichiometrySupport.tryToBalanceChemicalEquation(rawReaction.withoutDuplicates)
 
-    val expectedReaction = ChemicalEquation("1 ion(Cu, 2) (aq) + 1 ion(CO3, -2) (aq) --> 1 CuCO3 (s)")
+    val expectedReaction = ChemicalEquation("1 ion(Cu, 2) (aq) + 1 ion(CO3, -2) (aq) = 1 CuCO3 (s)")
 
     assertResult(Some(expectedReaction)) {
       balancedReactionOption
