@@ -96,7 +96,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 
     val resultEquationOption: Option[ChemicalEquation] =
       Try {
-        if (GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(resultMatrix)) {
+        if (GaussianElimination.isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(resultMatrix)) {
           val quantities: Seq[Int] = resultMatrix.map(_.toInt).rows.sortBy(_.takeWhile(_ == 0).size).map { row =>
             val coefficient = row.init.find(_ != 0).ensuring(_.nonEmpty).get
             require(row.last % coefficient == 0, s"${row.last} not divisable by $coefficient")

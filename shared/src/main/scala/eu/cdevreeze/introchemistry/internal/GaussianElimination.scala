@@ -29,6 +29,8 @@ object GaussianElimination {
   /**
    * Invokes method computeGaussJordanEchelonForm, but if the result has infinitely many solutions with one parameter,
    * tries to fill in that parameter and invokes computeGaussJordanEchelonForm again.
+   *
+   * The column count must be at least 1 plus the row count, or else an exception is thrown.
    */
   def tryToBalanceEquations(matrix: Matrix[Long], maxParameterValueToTry: Long): Matrix[Long] = {
     val rawResult = addEmptyRowsUntilColumnCountMinusOne(computeGaussJordanEchelonForm(matrix))
@@ -42,7 +44,7 @@ object GaussianElimination {
         }
 
         computeGaussJordanEchelonForm(nextMatrix)
-      }.find(isFoundToHaveExactlyOneIntegerOnlySolution).getOrElse(rawResult)
+      }.find(isFoundToHaveExactlyOneNonZeroIntegersOnlySolution).getOrElse(rawResult)
     } else {
       rawResult
     }
@@ -51,7 +53,9 @@ object GaussianElimination {
   /**
    * Performs Gauss-Jordan elimination. In other words, solves the corresponding set of linear equations, if possible.
    * In any case, this method tries to get as far as possible, and returns the last computed matrix. To check this
-   * resulting matrix, call methods such as `isFoundToHaveExactlyOneSolution` etc.
+   * resulting matrix, call methods such as `isFoundToHaveExactlyOneNonZeroIntegersOnlySolution` etc.
+   *
+   * The column count must be at least 1 plus the row count, or else an exception is thrown.
    */
   def computeGaussJordanEchelonForm(matrix: Matrix[Long]): Matrix[Long] = {
     require(hasMoreColumnsThanRows(matrix), s"Expected the column count to be at least 1 plus the row count")
@@ -72,19 +76,21 @@ object GaussianElimination {
   }
 
   /**
-   * Returns true if there is exactly one solution, even if it does not consist of whole numbers only.
+   * Returns true if there is exactly one (non-zeroes only) solution, even if it does not consist of whole numbers only.
    */
-  def isFoundToHaveExactlyOneSolutionAllowingForFractions(matrix: Matrix[Long]): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.forall { row =>
-      row.init.count(_ != 0) == 1
-    }
+  def isFoundToHaveExactlyOneNonZeroesSolution(matrix: Matrix[Long]): Boolean = {
+    val mat = addEmptyRowsUntilColumnCountMinusOne(matrix)
+
+    mat.rows.forall(rowHasSingleNonZeroSolution) &&
+      mat.rows.flatMap(findColumnIndexOfSingleNonZeroSolution).size ==
+        mat.rows.flatMap(findColumnIndexOfSingleNonZeroSolution).distinct.size
   }
 
   /**
-   * Returns true if there is exactly one solution, consisting of whole numbers only.
+   * Returns true if there is exactly one solution, consisting of non-zero whole numbers only.
    */
-  def isFoundToHaveExactlyOneIntegerOnlySolution(matrix: Matrix[Long]): Boolean = {
-    isFoundToHaveExactlyOneSolutionAllowingForFractions(matrix) && {
+  def isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(matrix: Matrix[Long]): Boolean = {
+    isFoundToHaveExactlyOneNonZeroesSolution(matrix) && {
       addEmptyRowsUntilColumnCountMinusOne(matrix).rows.forall { row =>
         val coefficient = row.init.find(_ != 0).get
         coefficient != 0 && row.last % coefficient == 0
@@ -93,19 +99,15 @@ object GaussianElimination {
   }
 
   def isFoundToHaveNoSolutions(matrix: Matrix[Long]): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists { row =>
-      row.init.forall(_ == 0) && row.last != 0
-    }
+    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists(rowHasNoSolutions)
   }
 
   def isFoundToHaveInfinitelyManySolutions(matrix: Matrix[Long]): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists { row =>
-      row.forall(_ == 0)
-    } && !isFoundToHaveNoSolutions(matrix)
+    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists(rowHasInfinitelyManySolutions) && !isFoundToHaveNoSolutions(matrix)
   }
 
   def isFoundToHaveInfinitelyManySolutionsWithGivenParameterCount(matrix: Matrix[Long], parameterCount: Int): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.count(_.forall(_ == 0)) == parameterCount &&
+    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.count(rowHasInfinitelyManySolutions) == parameterCount &&
       isFoundToHaveInfinitelyManySolutions(matrix)
   }
 
@@ -217,6 +219,33 @@ object GaussianElimination {
         }
       }.getOrElse(matrix)
     }
+  }
+
+  /**
+   * Returns true if the row has precisely one (non-zero) solution (for one variable), even if it is a fraction.
+   * That is, returns true if there are precisely 2 columns that are non-zero, with one of them being the last column.
+   */
+  private def rowHasSingleNonZeroSolution(row: Seq[Long]): Boolean = {
+    row.init.count(_ != 0L) == 1 && row.last != 0L
+  }
+
+  private def findColumnIndexOfSingleNonZeroSolution(row: Seq[Long]): Option[Int] = {
+    if (rowHasSingleNonZeroSolution(row)) row.zipWithIndex.find(_._1 != 0L).map(_._2) else None
+  }
+
+  /**
+   * Returns true if the row has infinitely many solutions, even if they are fractions or zero.
+   * That is, returns true if all columns of the row are zero.
+   */
+  private def rowHasInfinitelyManySolutions(row: Seq[Long]): Boolean = {
+    row.forall(_ == 0L)
+  }
+
+  /**
+   * Returns true if the row has no solutions, that is, if it contains only zeroes except for the last column, which is non-zero.
+   */
+  private def rowHasNoSolutions(row: Seq[Long]): Boolean = {
+    row.last != 0L && row.init.forall(_ == 0L)
   }
 
   private def gcdOption(xs: Seq[Long]): Option[Long] = {

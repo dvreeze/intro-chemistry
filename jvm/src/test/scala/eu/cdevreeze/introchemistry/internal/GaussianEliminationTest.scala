@@ -35,7 +35,7 @@ class GaussianEliminationTest extends AnyFunSuite {
     val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
     assertResult(true) {
-      GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(eliminationResult)
+      GaussianElimination.isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(eliminationResult)
     }
 
     val expectedResult = Matrix[Long](Seq(
@@ -58,7 +58,7 @@ class GaussianEliminationTest extends AnyFunSuite {
     val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
     assertResult(true) {
-      GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(eliminationResult)
+      GaussianElimination.isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(eliminationResult)
     }
 
     val expectedResult = Matrix[Long](Seq(
@@ -82,7 +82,7 @@ class GaussianEliminationTest extends AnyFunSuite {
     val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
     assertResult(true) {
-      GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(eliminationResult)
+      GaussianElimination.isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(eliminationResult)
     }
 
     val expectedResult = Matrix[Long](Seq(
@@ -106,7 +106,7 @@ class GaussianEliminationTest extends AnyFunSuite {
     val eliminationResult = GaussianElimination.computeGaussJordanEchelonForm(matrix)
 
     assertResult(true) {
-      GaussianElimination.isFoundToHaveExactlyOneIntegerOnlySolution(eliminationResult)
+      GaussianElimination.isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(eliminationResult)
     }
 
     val expectedResult = Matrix[Long](Seq(
