@@ -78,14 +78,6 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
    */
   def relativeElectronCount: Int = subshellConfigs.map(_.electronCount).sum
 
-  /**
-   * Returns a string representation of the electron config. For example: [Xe]6s2 4f14 5d10 6p3.
-   */
-  def show: String = {
-    val nobleGasString = previousNobleGasOption.map(elm => s"[$elm]").getOrElse("")
-    s"$nobleGasString${subshellConfigs.map(_.show).mkString(" ")}"
-  }
-
   def minus(subshellConfig: SubshellConfig): ElectronConfig = {
     ElectronConfig(previousNobleGasOption, subshellConfigs.filterNot(Set(subshellConfig)))
   }
@@ -98,7 +90,7 @@ final case class ElectronConfig(previousNobleGasOption: Option[ElementSymbol], s
 object ElectronConfig {
 
   /**
-   * Parses the string into an ElectronConfig object. The string is expected to be in the format returned by the show method.
+   * Parses the string into an ElectronConfig object. The string is expected to be in the format returned by the show extension method.
    */
   def parse(s: String): ElectronConfig = {
     val previousNobleGasOption: Option[ElementSymbol] =
@@ -143,8 +135,6 @@ object ElectronConfig {
     require(
       electronCount <= subshell.maxElectronCount,
       s"The electron count must be at most ${subshell.maxElectronCount}, but got $electronCount instead")
-
-    def show: String = s"$level${subshell.name}$electronCount"
 
     def minusElectron: SubshellConfig = {
       require(electronCount > 1, s"Electron count is $electronCount, so cannot remove electron")

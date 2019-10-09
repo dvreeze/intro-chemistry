@@ -44,19 +44,4 @@ final case class Element(
   def atomicNumber: Int = symbol.atomicNumber
 
   def chemicalGroup: ChemicalGroupBlock = symbol.chemicalGroup
-
-  def show: String = {
-    (0 until productArity).map { idx =>
-      val propertyName = productElementName(idx)
-
-      val propertyValue = propertyName match {
-        case "electronegativityOption" | "atomicRadiusOption" | "ionizationEnergyOption" | "electronAffinityOption" =>
-          productElement(idx).asInstanceOf[Option[_]].map(_.toString).getOrElse("")
-        case "oxidationStates" => productElement(idx).asInstanceOf[Set[_]].mkString("[", ",", "]")
-        case _ => productElement(idx)
-      }
-
-      s"$propertyName -> $propertyValue"
-    }.mkString("[ ", ", ", " ]")
-  }
 }

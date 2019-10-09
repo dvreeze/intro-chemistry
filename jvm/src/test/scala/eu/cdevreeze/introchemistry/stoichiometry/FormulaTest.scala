@@ -18,6 +18,8 @@ package eu.cdevreeze.introchemistry.stoichiometry
 
 import org.scalatest.funsuite.AnyFunSuite
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
+import eu.cdevreeze.introchemistry.typeclasses.instances.ShowChemicalEquations._
+import eu.cdevreeze.introchemistry.typeclasses.show.ShowSyntax._
 
 /**
  * Test for Formula creation and parsing and querying.

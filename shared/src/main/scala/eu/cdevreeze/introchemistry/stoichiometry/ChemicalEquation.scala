@@ -71,26 +71,12 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
 
     if (duplicates.isEmpty) this else ChemicalEquation(reactants.filterNot(duplicates), products.filterNot(duplicates))
   }
-
-  /**
-   * Returns the string representation from which the same reaction equation can be parsed.
-   */
-  def show: String = {
-    s"${reactants.map(_.show).mkString(" + ")} = ${products.map(_.show).mkString(" + ")}"
-  }
 }
 
 object ChemicalEquation {
 
   final case class FormulaQuantity(formula: Formula, phaseOption: Option[Phase], quantity: Int) {
     require(quantity > 0, s"Quantity must be > 0")
-
-    def show: String = {
-      val quantityString = if (quantity == 1) "" else quantity.toString + " "
-      val phaseString = phaseOption.map(ph => s"($ph)").getOrElse("")
-
-      s"$quantityString${formula.show} $phaseString".trim
-    }
 
     def withQuantity(newQuantity: Int): FormulaQuantity = this.copy(quantity = newQuantity)
   }

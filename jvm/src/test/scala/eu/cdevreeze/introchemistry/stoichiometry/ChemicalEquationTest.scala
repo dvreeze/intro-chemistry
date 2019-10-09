@@ -17,6 +17,8 @@
 package eu.cdevreeze.introchemistry.stoichiometry
 
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
+import eu.cdevreeze.introchemistry.typeclasses.instances.ShowChemicalEquations._
+import eu.cdevreeze.introchemistry.typeclasses.show.ShowSyntax._
 import org.scalatest.funsuite.AnyFunSuite
 
 /**

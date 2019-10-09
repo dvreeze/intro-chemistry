@@ -26,7 +26,7 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
  *
  * The string format of the formula is to a large extent compatible with the format used in https://www.webqc.org/balance.php.
  *
- * Example (neutral) formulas as strings (format returned by method "show" and parsed by method "parse"):
+ * Example (neutral) formulas as strings (format returned by extension method "show" (from type class Show) and parsed by method "parse"):
  * "O2", "CO2", "C2H4O", and "Ca3(PO4)2". A more complex example is "Ca(H2PO4)2H2O". Example ionic formula: "SO4{-2}".
  *
  * The term "formula" is used as described here:
@@ -54,11 +54,6 @@ sealed trait Formula {
   def atomCounts: Map[ElementSymbol, Int]
 
   def charge: Int
-
-  /**
-   * Returns the string representation from which the same formula can be parsed.
-   */
-  def show: String
 
   final def isSingleElement: Boolean = elementSymbols.sizeIs == 1
 
@@ -89,8 +84,6 @@ sealed trait IonFormula extends Formula {
   def isCation: Boolean = charge > 0
 
   def isAnion: Boolean = charge < 0
-
-  final def show: String = s"${underlyingNonIon.show}{$charge}"
 }
 
 sealed trait ElementFormula extends NonIonFormula {
@@ -100,11 +93,6 @@ sealed trait ElementFormula extends NonIonFormula {
   def atomCount: Int
 
   final def atomCounts: Map[ElementSymbol, Int] = Map(elementSymbol -> atomCount)
-
-  final def show: String = {
-    val showedCount: String = if (atomCount == 1) "" else atomCount.toString
-    s"$elementSymbol$showedCount"
-  }
 }
 
 final case class AtomicElement(elementSymbol: ElementSymbol) extends ElementFormula {
@@ -135,8 +123,6 @@ final case class Compound(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaP
   def atomCounts: Map[ElementSymbol, Int] = {
     Formula.getAtomCounts(quantifiedFormulaParts)
   }
-
-  def show: String = quantifiedFormulaParts.map(_.show).mkString
 }
 
 object NonIonFormula {
@@ -165,7 +151,7 @@ final case class MonatomicIon(elementSymbol: ElementSymbol, charge: Int) extends
 
 final case class PolyatomicIon(quantifiedFormulaParts: Seq[Formula.QuantifiedFormulaPart], charge: Int) extends IonFormula {
   require(quantifiedFormulaParts.sizeIs >= 1, s"Not a polyatomic ion: missing 'parts'")
-  require(!isSingleAtom, s"Not a polyatomic ion: $show")
+  require(!isSingleAtom, s"Not a polyatomic ion: $this")
   require(charge != 0, s"Not an ion, because the charge is 0")
 
   def atomCounts: Map[ElementSymbol, Int] = {
@@ -205,8 +191,6 @@ object Formula {
 
     def atomCounts: Map[ElementSymbol, Int]
 
-    def show: String
-
     final def isSingleElement: Boolean = atomCounts.keySet.sizeIs == 1
 
     final def isMultiElement: Boolean = !isSingleElement
@@ -217,19 +201,15 @@ object Formula {
   final case class MonatomicFormulaPart(elementSymbol: ElementSymbol) extends FormulaPart {
 
     def atomCounts: Map[ElementSymbol, Int] = Map(elementSymbol -> 1)
-
-    def show: String = elementSymbol.toString
   }
 
   final case class PolyatomicFormulaPart(quantifiedFormulaParts: Seq[QuantifiedFormulaPart]) extends FormulaPart {
     require(quantifiedFormulaParts.sizeIs >= 1, s"Not a compound: missing 'parts'")
-    require(!isSingleAtom, s"Not a polyatomic 'part': (${quantifiedFormulaParts.map(_.show).mkString})")
+    require(!isSingleAtom, s"Not a polyatomic 'part': (${quantifiedFormulaParts.map(_.toString).mkString})")
 
     def atomCounts: Map[ElementSymbol, Int] = {
       Formula.getAtomCounts(quantifiedFormulaParts)
     }
-
-    def show: String = s"(${quantifiedFormulaParts.map(_.show).mkString})"
   }
 
   // A part with its quantity in a formula. I do not know if there is an official name for this.
@@ -239,11 +219,6 @@ object Formula {
 
     def atomCounts: Map[ElementSymbol, Int] = {
       part.atomCounts.view.mapValues(_ * count).toMap
-    }
-
-    def show: String = {
-      val showedCount: String = if (count == 1) "" else count.toString
-      s"${part.show}$showedCount"
     }
   }
 
