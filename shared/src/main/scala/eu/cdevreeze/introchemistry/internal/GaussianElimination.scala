@@ -16,6 +16,7 @@
 
 package eu.cdevreeze.introchemistry.internal
 
+import scala.collection.immutable.SeqMap
 import scala.util.chaining._
 
 /**
@@ -27,26 +28,92 @@ import scala.util.chaining._
 object GaussianElimination {
 
   /**
-   * Invokes method computeGaussJordanEchelonForm, but if the result has infinitely many solutions with one parameter,
-   * tries to fill in that parameter and invokes computeGaussJordanEchelonForm again.
+   * Invokes method computeGaussJordanEchelonForm, but if the result has infinitely many solutions with (only) one parameter,
+   * tries to fill in that parameter and invokes computeGaussJordanEchelonForm again and again until either a solution has
+   * been found or the search for a solution has been exhausted.
    *
    * The column count must be at least 1 plus the row count, or else an exception is thrown.
    */
   def tryToBalanceEquations(matrix: Matrix[Long], maxParameterValueToTry: Long): Matrix[Long] = {
     val rawResult = addEmptyRowsUntilColumnCountMinusOne(computeGaussJordanEchelonForm(matrix))
 
-    if (isFoundToHaveInfinitelyManySolutionsWithOneParameter(rawResult)) {
-      (1L to maxParameterValueToTry).iterator.map { parValue =>
-        assert(rawResult.rows.count(_.forall(_ == 0)) == 1)
+    if (isFoundToHaveExactlyOneNonZeroesSolution(rawResult) || isFoundToHaveNoSolutions(rawResult)) {
+      rawResult
+    } else {
+      if (isFoundToHaveInfinitelyManySolutionsInOneParameter(rawResult)) {
+        val nonConstraintRows = rawResult.rows.filter(rowContainsNoConstraint)
+        assert(nonConstraintRows.sizeIs == 1, s"Expected precisely 1 non-constraint row but found ${nonConstraintRows.size} ones")
 
-        val nextMatrix = rawResult.mapRows { row =>
-          if (row.forall(_ == 0)) row.dropRight(2).appended(1L).appended(parValue) else row
+        val startMatrix = Matrix(rawResult.rows.filterNot(rowContainsNoConstraint) ++ nonConstraintRows)
+
+        // Free variable columns, that is, the columns that are not entirely solved
+        val nonSolvedColumns: Set[Int] = findAllNonSolvedColumns(startMatrix).ensuring(_.forall(_ < startMatrix.columnCount - 1))
+        val sortedNonSolvedColumns: Seq[Int] = nonSolvedColumns.toSeq.sortBy(col => startMatrix.column(col).count(_ != 0L))
+
+        val colIndex: Int = sortedNonSolvedColumns.head
+
+        val resultMatrices: Iterator[Matrix[Long]] = 1L.until(maxParameterValueToTry).iterator.map { value =>
+          val newRow = startMatrix.rows.last.updated(colIndex, 1L).updated(startMatrix.columnCount - 1, value)
+
+          val mat: Matrix[Long] = Matrix(startMatrix.rows.init.appended(newRow))
+
+          computeGaussJordanEchelonForm(mat)
         }
 
-        computeGaussJordanEchelonForm(nextMatrix)
-      }.find(isFoundToHaveExactlyOneNonZeroIntegersOnlySolution).getOrElse(rawResult)
-    } else {
+        resultMatrices.find(isFoundToHaveExactlyOneNonZeroIntegersOnlySolution).getOrElse(rawResult)
+      } else {
+        rawResult
+      }
+    }
+  }
+
+  /**
+   * Invokes method computeGaussJordanEchelonForm, but if the result has infinitely many solutions with one or more parameters,
+   * tries to fill in those parameters as specified and invokes computeGaussJordanEchelonForm again.
+   *
+   * The column count must be at least 1 plus the row count, or else an exception is thrown.
+   */
+  def tryToBalanceEquations(matrix: Matrix[Long], extraColumnConstraints: SeqMap[Int, Long]): Matrix[Long] = {
+    // TODO Fix the implementation, and remove the println statements
+
+    val rawResult = addEmptyRowsUntilColumnCountMinusOne(computeGaussJordanEchelonForm(matrix))
+
+    if (isFoundToHaveExactlyOneNonZeroesSolution(rawResult) || isFoundToHaveNoSolutions(rawResult)) {
       rawResult
+    } else {
+      if (isFoundToHaveInfinitelyManySolutions(rawResult)) {
+        val startMatrix =
+          Matrix(rawResult.rows.filterNot(rowContainsNoConstraint) ++ rawResult.rows.filter(rowContainsNoConstraint))
+
+        // Free variable columns, that is, the columns that are not entirely solved
+        val nonSolvedColumns: Set[Int] = findAllNonSolvedColumns(startMatrix).ensuring(_.forall(_ < startMatrix.columnCount - 1))
+
+        val emptyRowIndices: Seq[Int] = startMatrix.rows.zipWithIndex.filter { case (r, _) => rowContainsNoConstraint(r) }.map(_._2)
+        val colIndices: Seq[Int] = nonSolvedColumns.intersect(extraColumnConstraints.keySet).toSeq.take(emptyRowIndices.size)
+
+        println(s"Col indices: $colIndices")
+        println(s"Empty row indices: $emptyRowIndices")
+
+        if (colIndices.size == emptyRowIndices.size) {
+          val mat: Matrix[Long] =
+            colIndices.zip(emptyRowIndices).foldLeft(startMatrix) {
+              case (accMatrix, (colIdx, rowIdx)) =>
+                assert(rowContainsNoConstraint(accMatrix.rows(rowIdx)))
+
+                val value = extraColumnConstraints.get(colIdx).ensuring(_.nonEmpty).get
+
+                println(s"Updating row $rowIdx. Column $colIdx gets value $value")
+                accMatrix.updateCell(rowIdx, colIdx, 1L).updateCell(rowIdx, accMatrix.columnCount - 1, value)
+            }
+
+          println(mat)
+          computeGaussJordanEchelonForm(mat).tap(println)
+        } else {
+          rawResult
+        }
+      } else {
+        rawResult
+      }
     }
   }
 
@@ -77,17 +144,19 @@ object GaussianElimination {
 
   /**
    * Returns true if there is exactly one (non-zeroes only) solution, even if it does not consist of whole numbers only.
+   *
+   * Call this method only after calling method computeGaussJordanEchelonForm (directly or indirectly), on the resulting matrix.
    */
   def isFoundToHaveExactlyOneNonZeroesSolution(matrix: Matrix[Long]): Boolean = {
     val mat = addEmptyRowsUntilColumnCountMinusOne(matrix)
 
-    mat.rows.forall(rowHasSingleNonZeroSolution) &&
-      mat.rows.flatMap(findColumnIndexOfSingleNonZeroSolution).size ==
-        mat.rows.flatMap(findColumnIndexOfSingleNonZeroSolution).distinct.size
+    findAllNonSolvedColumns(mat).isEmpty
   }
 
   /**
    * Returns true if there is exactly one solution, consisting of non-zero whole numbers only.
+   *
+   * Call this method only after calling method computeGaussJordanEchelonForm (directly or indirectly), on the resulting matrix.
    */
   def isFoundToHaveExactlyOneNonZeroIntegersOnlySolution(matrix: Matrix[Long]): Boolean = {
     isFoundToHaveExactlyOneNonZeroesSolution(matrix) && {
@@ -98,21 +167,31 @@ object GaussianElimination {
     }
   }
 
+  /**
+   * Returns true if there are no solutions.
+   *
+   * Call this method only after calling method computeGaussJordanEchelonForm (directly or indirectly), on the resulting matrix.
+   */
   def isFoundToHaveNoSolutions(matrix: Matrix[Long]): Boolean = {
     addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists(rowHasNoSolutions)
   }
 
+  /**
+   * Returns true if there are infinitely many solutions.
+   *
+   * Call this method only after calling method computeGaussJordanEchelonForm (directly or indirectly), on the resulting matrix.
+   */
   def isFoundToHaveInfinitelyManySolutions(matrix: Matrix[Long]): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists(rowHasInfinitelyManySolutions) && !isFoundToHaveNoSolutions(matrix)
+    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.exists(rowContainsNoConstraint) && !isFoundToHaveNoSolutions(matrix)
   }
 
-  def isFoundToHaveInfinitelyManySolutionsWithGivenParameterCount(matrix: Matrix[Long], parameterCount: Int): Boolean = {
-    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.count(rowHasInfinitelyManySolutions) == parameterCount &&
-      isFoundToHaveInfinitelyManySolutions(matrix)
-  }
-
-  def isFoundToHaveInfinitelyManySolutionsWithOneParameter(matrix: Matrix[Long]): Boolean = {
-    isFoundToHaveInfinitelyManySolutionsWithGivenParameterCount(matrix, 1)
+  /**
+   * Returns true if there are infinitely many solutions in exactly one parameter.
+   *
+   * Call this method only after calling method computeGaussJordanEchelonForm (directly or indirectly), on the resulting matrix.
+   */
+  def isFoundToHaveInfinitelyManySolutionsInOneParameter(matrix: Matrix[Long]): Boolean = {
+    addEmptyRowsUntilColumnCountMinusOne(matrix).rows.count(rowContainsNoConstraint) == 1 && !isFoundToHaveNoSolutions(matrix)
   }
 
   def hasMoreColumnsThanRows(matrix: Matrix[Long]): Boolean = {
@@ -233,11 +312,19 @@ object GaussianElimination {
     if (rowHasSingleNonZeroSolution(row)) row.zipWithIndex.find(_._1 != 0L).map(_._2) else None
   }
 
+  private def findAllSolvedColumns(mat: Matrix[Long]): Set[Int] = {
+    mat.rows.flatMap(findColumnIndexOfSingleNonZeroSolution).toSet
+  }
+
+  private def findAllNonSolvedColumns(mat: Matrix[Long]): Set[Int] = {
+    0.until(mat.columnCount - 1).toSet.diff(findAllSolvedColumns(mat))
+  }
+
   /**
-   * Returns true if the row has infinitely many solutions, even if they are fractions or zero.
-   * That is, returns true if all columns of the row are zero.
+   * Returns true if the row contains no constraint on the "variables".
+   * That is, returns true if all columns of the row (including the last one) are zero.
    */
-  private def rowHasInfinitelyManySolutions(row: Seq[Long]): Boolean = {
+  private def rowContainsNoConstraint(row: Seq[Long]): Boolean = {
     row.forall(_ == 0L)
   }
 

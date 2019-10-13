@@ -127,4 +127,23 @@ class ChemicalEquationBalancingTest extends AnyFunSuite {
       balancedReactionOption
     }
   }
+
+  /*
+  test("testBalanceLongChemicalEquation") {
+    val unbalancedReaction =
+      ChemicalEquation("K4Fe(CN)6 + KMnO4 + H2SO4 = KHSO4 + Fe2(SO4)3 + MnSO4 + HNO3 + CO2 + H2O").ensuring(!_.isBalanced)
+
+    val colValues: SeqMap[Int, Long] = SeqMap(0 -> 10L, 1 -> 122L, 8 -> 188L)
+
+    val balancedReactionOption: Option[ChemicalEquation] =
+      stoichiometrySupport.tryToBalanceChemicalEquation(unbalancedReaction, colValues)
+
+    val expectedReaction =
+      ChemicalEquation("10 K4Fe(CN)6 + 122 KMnO4 + 299 H2SO4 = 162 KHSO4 + 5 Fe2(SO4)3 + 122 MnSO4 + 60 HNO3 + 60 CO2 + 188 H2O")
+
+    assertResult(Some(expectedReaction)) {
+      balancedReactionOption
+    }
+  }
+  */
 }

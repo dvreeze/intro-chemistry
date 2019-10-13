@@ -37,11 +37,30 @@ final case class Matrix[A](rows: Seq[Seq[A]])(implicit numeric: Numeric[A]) {
     rows(rowIndex)(columnIndex)
   }
 
+  def column(columnIndex: Int): Seq[A] = {
+    rows.map(_(columnIndex))
+  }
+
   def isOnDiagonal(rowIndex: Int, columnIndex: Int): Boolean = {
     require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
     require(columnIndex >= 0 && columnIndex < columnCount, s"Column index $columnIndex out of bounds")
 
     rowIndex == columnIndex
+  }
+
+  def updateCell(rowIndex: Int, columnIndex: Int, newValue: A): Matrix[A] = {
+    require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
+    require(columnIndex >= 0 && columnIndex < columnCount, s"Column index $columnIndex out of bounds")
+
+    val newRows = rows.updated(rowIndex, rows(rowIndex).updated(columnIndex, newValue))
+    Matrix(newRows)
+  }
+
+  def updateRow(rowIndex: Int, f: Seq[A] => Seq[A]): Matrix[A] = {
+    require(rowIndex >= 0 && rowIndex < rowCount, s"Row index $rowIndex out of bounds")
+
+    val newRows = rows.updated(rowIndex, f(rows(rowIndex)))
+    Matrix(newRows)
   }
 
   def swapRows(rowIndex1: Int, rowIndex2: Int): Matrix[A] = {

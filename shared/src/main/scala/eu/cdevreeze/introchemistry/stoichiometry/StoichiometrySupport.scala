@@ -16,6 +16,7 @@
 
 package eu.cdevreeze.introchemistry.stoichiometry
 
+import scala.collection.immutable.SeqMap
 import scala.util.Try
 
 import eu.cdevreeze.introchemistry.internal.GaussianElimination
@@ -73,6 +74,25 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
    * successful.
    */
   def tryToBalanceChemicalEquation(equation: ChemicalEquation): Option[ChemicalEquation] = {
+    tryToBalanceChemicalEquation(equation, mat => GaussianElimination.tryToBalanceEquations(mat, maxParValue))
+  }
+
+  /**
+   * Tries to balance the given (probably unbalanced) chemical equation, returning the optional balanced result if
+   * successful. If needed, the given extra column constraints are used.
+   */
+  def tryToBalanceChemicalEquation(equation: ChemicalEquation, extraColumnConstraints: SeqMap[Int, Long]): Option[ChemicalEquation] = {
+    tryToBalanceChemicalEquation(equation, mat => GaussianElimination.tryToBalanceEquations(mat, extraColumnConstraints))
+  }
+
+  /**
+   * Tries to balance the given (probably unbalanced) chemical equation, returning the optional balanced result if
+   * successful.
+   */
+  def tryToBalanceChemicalEquation(
+    equation: ChemicalEquation,
+    balanceEquation: Matrix[Long] => Matrix[Long]): Option[ChemicalEquation] = {
+
     // Find the elements and keep the order. Each element becomes an equation for that element.
     val elements: Seq[ElementSymbol] = equation.reactantsAndProducts.flatMap(_.formula.elementSymbols).distinct
 
@@ -92,7 +112,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
 
     val matrix = Matrix[Long](rows)
 
-    val resultMatrix = GaussianElimination.tryToBalanceEquations(matrix, maxParValue)
+    val resultMatrix = balanceEquation(matrix)
 
     val resultEquationOption: Option[ChemicalEquation] =
       Try {
@@ -118,7 +138,7 @@ final class StoichiometrySupport(val periodicTable: PeriodicTable) {
     resultEquationOption.filter(_.isBalanced)
   }
 
-  private val maxParValue: Long = 5000L
+  private val maxParValue: Long = 1000L
 }
 
 object StoichiometrySupport {

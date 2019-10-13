@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.api
 
+import scala.collection.immutable.SeqMap
+
 import eu.cdevreeze.introchemistry.periodictable.Element
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 import eu.cdevreeze.introchemistry.periodictable.OxidationStates
@@ -105,6 +107,14 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
    */
   def tryToBalanceChemicalEquation(equation: ChemicalEquation): Option[ChemicalEquation] = {
     StoichiometrySupport(periodicTable).tryToBalanceChemicalEquation(equation)
+  }
+
+  /**
+   * Tries to balance the given (probably unbalanced) chemical equation, returning the optional balanced result if
+   * successful.
+   */
+  def tryToBalanceChemicalEquation(equation: ChemicalEquation, extraColumnConstraints: SeqMap[Int, Long]): Option[ChemicalEquation] = {
+    StoichiometrySupport(periodicTable).tryToBalanceChemicalEquation(equation, extraColumnConstraints)
   }
 
   // Conversions from strings to formulas or chemical equations
