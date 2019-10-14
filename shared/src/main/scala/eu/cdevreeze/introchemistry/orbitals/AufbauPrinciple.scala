@@ -20,6 +20,7 @@ import scala.annotation.tailrec
 import scala.util.chaining._
 
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
+import eu.cdevreeze.introchemistry.stoichiometry.Formula
 
 /**
  * The Aufbau principle applied, resulting in (probable) electron configs for the different elements.
@@ -84,6 +85,33 @@ object AufbauPrinciple {
 
   def getElectronCount(element: ElementSymbol): Int = {
     getElectronCount(getProbableElectronConfig(element))
+  }
+
+  /**
+   * Returns the number of valence electrons, as needed for drawing Lewis structure diagrams.
+   */
+  def getValenceElectronCount(electronConfig: ElectronConfig): Int = {
+    val absoluteElectronConfig = getProbableAbsoluteElectronConfig(electronConfig).ensuring(_.previousNobleGasOption.isEmpty)
+
+    val maxLevelOption: Option[Int] = absoluteElectronConfig.subshellConfigs.map(_.level).maxOption
+    absoluteElectronConfig.subshellConfigs.filter(c => maxLevelOption.contains(c.level)).map(_.electronCount).sum
+  }
+
+  /**
+   * Returns the number of valence electrons of the given element, as needed for drawing Lewis structure diagrams.
+   */
+  def getValenceElectronCount(element: ElementSymbol): Int = {
+    getValenceElectronCount(getProbableElectronConfig(element))
+  }
+
+  /**
+   * Returns the number of valence electrons of the given formula, as needed for drawing Lewis structure diagrams.
+   */
+  def getValenceElectronCount(formula: Formula): Int = {
+    val resultIgnoringCharge =
+      formula.atomCounts.map { case (elem: ElementSymbol, count: Int) => count * getValenceElectronCount(elem) }.sum
+
+    resultIgnoringCharge - formula.charge
   }
 
   @tailrec
