@@ -116,6 +116,9 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) {
   def tryToBalanceChemicalEquation(equation: ChemicalEquation, extraColumnConstraints: SeqMap[Int, Long]): Option[ChemicalEquation] = {
     StoichiometrySupport(periodicTable).tryToBalanceChemicalEquation(equation, extraColumnConstraints)
   }
+}
+
+object SimpleQueryApi {
 
   // Conversions from strings to formulas or chemical equations
 

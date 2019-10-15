@@ -31,6 +31,7 @@ class SummarizeReactionsTest extends AnyFunSuite {
   private val queryApi = new SimpleQueryApi(PeriodicTableLoader.newInstance().loadPeriodicTable())
 
   import queryApi._
+  import SimpleQueryApi._
 
   test("writingBalancedChemicalEquations") {
     // Reaction of sodium bicarbonate ("baking soda") and acetic acid ("vinegar"), yielding hydrogen oxide (water) and
