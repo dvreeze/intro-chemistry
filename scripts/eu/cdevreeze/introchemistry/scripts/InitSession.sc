@@ -21,6 +21,7 @@ import SimpleQueryApi._
 import queryApi._
 import ElementSymbol._
 import scala.util.chaining._
+import LewisStructure._
 
 // Now we can make formulas/reactions and do stoichiometry calculations etc.
 
