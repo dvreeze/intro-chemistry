@@ -17,7 +17,6 @@
 package eu.cdevreeze.introchemistry.lewis
 
 import eu.cdevreeze.introchemistry.api.SimpleQueryApi
-import eu.cdevreeze.introchemistry.lewis.LewisStructure.AtomKey
 import eu.cdevreeze.introchemistry.orbitals.AufbauPrinciple
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 import eu.cdevreeze.introchemistry.stoichiometry.Formula
@@ -33,21 +32,22 @@ class LewisStructureTest extends AnyFunSuite {
   import AufbauPrinciple._
   import ElementSymbol._
   import SimpleQueryApi._
+  import LewisStructure._
 
   test("testElementN") {
-    val lewisForN: LewisStructure = LewisStructure.builder.plusAtom(N, 1, 5).build
+    val lewisForN: LewisStructure = LewisStructure.builder.plusAtom(N.at(1), 5).build
 
     assertResult(true) {
       lewisForN.isConnectedGraph
     }
 
     assertResult(getValenceElectronCount(N)) {
-      lewisForN.getAtom(AtomKey(N, 1)).loneElectronCount
+      lewisForN.getAtom(N.at(1)).loneElectronCount
     }
   }
 
   test("testUnconnectedStructure") {
-    val wrongLewis: LewisStructure = LewisStructure.builder.plusAtom(C, 1, 4).plusAtom(H, 1, 1).build
+    val wrongLewis: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(H.at(1), 1).build
 
     assertResult(false) {
       wrongLewis.isConnectedGraph
@@ -55,71 +55,71 @@ class LewisStructureTest extends AnyFunSuite {
   }
 
   test("testElementCa") {
-    val lewisForCa: LewisStructure = LewisStructure.builder.plusAtom(Ca, 1, 2).build
+    val lewisForCa: LewisStructure = LewisStructure.builder.plusAtom(Ca.at(1), 2).build
 
     assertResult(true) {
       lewisForCa.isConnectedGraph
     }
 
     assertResult(getValenceElectronCount(Ca)) {
-      lewisForCa.getAtom(AtomKey(Ca, 1)).loneElectronCount
+      lewisForCa.getAtom(Ca.at(1)).loneElectronCount
     }
   }
 
   test("testElementC") {
-    val lewisForC: LewisStructure = LewisStructure.builder.plusAtom(C, 1, 4).build
+    val lewisForC: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).build
 
     assertResult(true) {
       lewisForC.isConnectedGraph
     }
 
     assertResult(getValenceElectronCount(C)) {
-      lewisForC.getAtom(AtomKey(C, 1)).loneElectronCount
+      lewisForC.getAtom(C.at(1)).loneElectronCount
     }
   }
 
   test("testWrongElementO") {
-    val lewisForO: LewisStructure = LewisStructure.builder.plusAtom(O, 1, 5).build // wrong
+    val lewisForO: LewisStructure = LewisStructure.builder.plusAtom(O.at(1), 5).build // wrong
 
     assertResult(true) {
       lewisForO.isConnectedGraph
     }
 
     assertResult(false) {
-      lewisForO.getAtom(AtomKey(O, 1)).loneElectronCount == getValenceElectronCount(O)
+      lewisForO.getAtom(O.at(1)).loneElectronCount == getValenceElectronCount(O)
     }
   }
 
   test("testElementH") {
-    val lewisForH: LewisStructure = LewisStructure.builder.plusAtom(H, 1, 1).build
+    val lewisForH: LewisStructure = LewisStructure.builder.plusAtom(H.at(1), 1).build
 
     assertResult(true) {
       lewisForH.isConnectedGraph
     }
 
     assertResult(getValenceElectronCount(H)) {
-      lewisForH.getAtom(AtomKey(H, 1)).loneElectronCount
+      lewisForH.getAtom(H.at(1)).loneElectronCount
     }
   }
 
   test("testElementNe") {
-    val lewisForNe: LewisStructure = LewisStructure.builder.plusAtom(Ne, 1, 8).build
+    val lewisForNe: LewisStructure = LewisStructure.builder.plusAtom(Ne.at(1), 8).build
 
     assertResult(true) {
       lewisForNe.isConnectedGraph
     }
 
     assertResult(getValenceElectronCount(Ne)) {
-      lewisForNe.getAtom(AtomKey(Ne, 1)).loneElectronCount
+      lewisForNe.getAtom(Ne.at(1)).loneElectronCount
     }
   }
 
   test("testCO2") {
     val lewisForCO2: LewisStructure =
       LewisStructure.builder
-        .plusAtom(C, 1, 0).plusAtom(O, 1, 4).plusAtom(O, 2, 4)
-        .plusBonds(AtomKey(C, 1), AtomKey(O, 1), 2)
-        .plusBonds(AtomKey(C, 1), AtomKey(O, 2), 2)
+        .plusAtom(C.at(1), 0).plusAtom(O.at(1), 4).plusAtom(O.at(2), 4)
+        .plusBonds(C.at(1), O.at(1), 2)
+        .plusBonds(C.at(1), O.at(2), 2)
         .build
 
     assertResult(true) {
@@ -127,27 +127,27 @@ class LewisStructureTest extends AnyFunSuite {
     }
 
     assertResult(getValenceElectronCount(C)) {
-      lewisForCO2.getElectronCount(AtomKey(C, 1))
+      lewisForCO2.getElectronCount(C.at(1))
     }
 
     assertResult(8) {
-      lewisForCO2.getSurroundingElectronCount(AtomKey(C, 1))
+      lewisForCO2.getSurroundingElectronCount(C.at(1))
     }
 
     assertResult(getValenceElectronCount(O)) {
-      lewisForCO2.getElectronCount(AtomKey(O, 1))
+      lewisForCO2.getElectronCount(O.at(1))
     }
 
     assertResult(8) {
-      lewisForCO2.getSurroundingElectronCount(AtomKey(O, 1))
+      lewisForCO2.getSurroundingElectronCount(O.at(1))
     }
 
     assertResult(getValenceElectronCount(O)) {
-      lewisForCO2.getElectronCount(AtomKey(O, 2))
+      lewisForCO2.getElectronCount(O.at(2))
     }
 
     assertResult(8) {
-      lewisForCO2.getSurroundingElectronCount(AtomKey(O, 2))
+      lewisForCO2.getSurroundingElectronCount(O.at(2))
     }
 
     assertResult("CO2".f.atomCounts) {
@@ -158,8 +158,8 @@ class LewisStructureTest extends AnyFunSuite {
   test("testN2") {
     val lewisForN2: LewisStructure =
       LewisStructure.builder
-        .plusAtom(N, 1, 2).plusAtom(N, 2, 2)
-        .plusBonds(AtomKey(N, 1), AtomKey(N, 2), 3)
+        .plusAtom(N.at(1), 2).plusAtom(N.at(2), 2)
+        .plusBonds(N.at(1), N.at(2), 3)
         .build
 
     assertResult(true) {
@@ -167,19 +167,19 @@ class LewisStructureTest extends AnyFunSuite {
     }
 
     assertResult(getValenceElectronCount(N)) {
-      lewisForN2.getElectronCount(AtomKey(N, 1))
+      lewisForN2.getElectronCount(N.at(1))
     }
 
     assertResult(8) {
-      lewisForN2.getSurroundingElectronCount(AtomKey(N, 1))
+      lewisForN2.getSurroundingElectronCount(N.at(1))
     }
 
     assertResult(getValenceElectronCount(N)) {
-      lewisForN2.getElectronCount(AtomKey(N, 2))
+      lewisForN2.getElectronCount(N.at(2))
     }
 
     assertResult(8) {
-      lewisForN2.getSurroundingElectronCount(AtomKey(N, 2))
+      lewisForN2.getSurroundingElectronCount(N.at(2))
     }
 
     assertResult("N2".f.atomCounts) {
@@ -190,11 +190,11 @@ class LewisStructureTest extends AnyFunSuite {
   test("testCH4") {
     val lewisForCH4: LewisStructure =
       LewisStructure.builder
-        .plusAtom(C, 1, 0).plusAtom(H, 1, 0).plusAtom(H, 2, 0).plusAtom(H, 3, 0).plusAtom(H, 4, 0)
-        .plusBond(AtomKey(C, 1), AtomKey(H, 1))
-        .plusBond(AtomKey(C, 1), AtomKey(H, 2))
-        .plusBond(AtomKey(C, 1), AtomKey(H, 3))
-        .plusBond(AtomKey(C, 1), AtomKey(H, 4))
+        .plusAtom(C.at(1), 0).plusAtom(H.at(1), 0).plusAtom(H.at(2), 0).plusAtom(H.at(3), 0).plusAtom(H.at(4), 0)
+        .plusBond(C.at(1), H.at(1))
+        .plusBond(C.at(1), H.at(2))
+        .plusBond(C.at(1), H.at(3))
+        .plusBond(C.at(1), H.at(4))
         .build
 
     assertResult(true) {
@@ -202,19 +202,19 @@ class LewisStructureTest extends AnyFunSuite {
     }
 
     assertResult(getValenceElectronCount(C)) {
-      lewisForCH4.getElectronCount(AtomKey(C, 1))
+      lewisForCH4.getElectronCount(C.at(1))
     }
 
     assertResult(8) {
-      lewisForCH4.getSurroundingElectronCount(AtomKey(C, 1))
+      lewisForCH4.getSurroundingElectronCount(C.at(1))
     }
 
     assertResult(Set(getValenceElectronCount(H))) {
-      1.to(4).map(i => lewisForCH4.getElectronCount(AtomKey(H, i))).toSet
+      1.to(4).map(i => lewisForCH4.getElectronCount(H.at(i))).toSet
     }
 
     assertResult(Set(2)) { // For H no octet rule
-      1.to(4).map(i => lewisForCH4.getSurroundingElectronCount(AtomKey(H, i))).toSet
+      1.to(4).map(i => lewisForCH4.getSurroundingElectronCount(H.at(i))).toSet
     }
 
     assertResult("CH4".f.atomCounts) {
@@ -224,7 +224,7 @@ class LewisStructureTest extends AnyFunSuite {
 
   test("testUnconnectedStructureForCl") {
     val wrongLewisForCl2: LewisStructure =
-      LewisStructure.builder.plusAtom(Cl, 1, 7).plusAtom(Cl, 2, 7).build
+      LewisStructure.builder.plusAtom(Cl.at(1), 7).plusAtom(Cl.at(2), 7).build
 
     assertResult(false) {
       wrongLewisForCl2.isConnectedGraph
@@ -238,10 +238,10 @@ class LewisStructureTest extends AnyFunSuite {
   test("testNH3") {
     val lewisForNH3: LewisStructure =
       LewisStructure.builder
-        .plusAtom(N, 1, 2).plusAtom(H, 1, 0).plusAtom(H, 2, 0).plusAtom(H, 3, 0)
-        .plusBond(AtomKey(N, 1), AtomKey(H, 1))
-        .plusBond(AtomKey(N, 1), AtomKey(H, 2))
-        .plusBond(AtomKey(N, 1), AtomKey(H, 3))
+        .plusAtom(N.at(1), 2).plusAtom(H.at(1), 0).plusAtom(H.at(2), 0).plusAtom(H.at(3), 0)
+        .plusBond(N.at(1), H.at(1))
+        .plusBond(N.at(1), H.at(2))
+        .plusBond(N.at(1), H.at(3))
         .build
 
     assertResult(true) {
@@ -249,11 +249,11 @@ class LewisStructureTest extends AnyFunSuite {
     }
 
     assertResult(true) {
-      lewisForNH3.obeysOctetRule(AtomKey(N, 1))
+      lewisForNH3.obeysOctetRule(N.at(1))
     }
 
     assertResult(false) {
-      lewisForNH3.obeysOctetRule(AtomKey(H, 1))
+      lewisForNH3.obeysOctetRule(H.at(1))
     }
 
     assertResult("NH3".f.atomCounts) {
@@ -272,9 +272,9 @@ class LewisStructureTest extends AnyFunSuite {
   test("testHCN") {
     val lewisForHCN: LewisStructure =
       LewisStructure.builder
-        .plusAtom(H, 1, 0).plusAtom(C, 1, 0).plusAtom(N, 1, 2)
-        .plusBond(AtomKey(H, 1), AtomKey(C, 1))
-        .plusBonds(AtomKey(C, 1), AtomKey(N, 1), 3)
+        .plusAtom(H.at(1), 0).plusAtom(C.at(1), 0).plusAtom(N.at(1), 2)
+        .plusBond(H.at(1), C.at(1))
+        .plusBonds(C.at(1), N.at(1), 3)
         .build
 
     validateLewisStructure(lewisForHCN, "HCN".f)

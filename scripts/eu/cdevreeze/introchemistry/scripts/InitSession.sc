@@ -11,6 +11,7 @@ import eu.cdevreeze.introchemistry.particlesandwaves._, eu.cdevreeze.introchemis
 import eu.cdevreeze.introchemistry.lewis._
 import eu.cdevreeze.introchemistry.typeclasses.instances.ShowChemicalEquations._
 import eu.cdevreeze.introchemistry.typeclasses.instances.ShowElectronConfigs._
+import eu.cdevreeze.introchemistry.typeclasses.instances.ShowLewisStructures._
 import eu.cdevreeze.introchemistry.typeclasses.show.ShowSyntax._
 
 val periodicTable = PeriodicTableLoader.newInstance().loadPeriodicTable()

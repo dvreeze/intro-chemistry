@@ -96,16 +96,17 @@ final class LewisStructure(
 
 object LewisStructure {
 
+  /**
+   * "Extension method" to turn an ElementSymbol with (typically one-based) index number into an AtomKey.
+   */
+  implicit class ToAtomKey(element: ElementSymbol) {
+
+    def at(i: Int): AtomKey = AtomKey(element, i)
+  }
+
   final case class AtomKey(element: ElementSymbol, seqNr: Int)
 
   final case class Atom(key: AtomKey, loneElectronCount: Int)
-
-  object Atom {
-
-    def apply(element: ElementSymbol, seqNr: Int, loneElectronCount: Int): Atom = {
-      Atom(AtomKey(element, seqNr), loneElectronCount)
-    }
-  }
 
   /**
    * Bond, with a from and to, although the direction does not matter.
@@ -142,10 +143,6 @@ object LewisStructure {
 
     def plusAtom(key: AtomKey, loneElectronCount: Int): Builder = {
       this.copy(atoms = this.atoms.appended(Atom(key, loneElectronCount)))
-    }
-
-    def plusAtom(element: ElementSymbol, seqNr: Int, loneElectronCount: Int): Builder = {
-      plusAtom(AtomKey(element, seqNr), loneElectronCount)
     }
 
     def plusBond(from: AtomKey, to: AtomKey): Builder = {
