@@ -79,14 +79,8 @@ class LewisStructureTest extends AnyFunSuite {
   }
 
   test("testWrongElementO") {
-    val lewisForO: LewisStructure = LewisStructure.builder.plusAtom(O.at(1), 5).build // wrong
-
-    assertResult(true) {
-      lewisForO.isConnectedGraph
-    }
-
-    assertResult(false) {
-      lewisForO.getAtom(O.at(1)).loneElectronCount == getValenceElectronCount(O)
+    intercept[RuntimeException] {
+      LewisStructure.builder.plusAtom(O.at(1), 5).build
     }
   }
 
@@ -277,10 +271,265 @@ class LewisStructureTest extends AnyFunSuite {
         .plusBonds(C.at(1), N.at(1), 3)
         .build
 
-    validateLewisStructure(lewisForHCN, "HCN".f)
+    validateIdealLewisStructure(lewisForHCN, "HCN".f)
   }
 
-  private def validateLewisStructure(lewisStruct: LewisStructure, formula: Formula): Unit = {
+  test("testCreateLewisStructureForCF4") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(F.at(1), 7).plusAtom(F.at(2), 7).plusAtom(F.at(3), 7).plusAtom(F.at(4), 7).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(C.at(1), F.at(1)).makeBond(C.at(1), F.at(2)).makeBond(C.at(1), F.at(3)).makeBond(C.at(1), F.at(4))
+
+    validateIdealLewisStructure(lewis, "CF4".f)
+  }
+
+  test("testCreateLewisStructureForNF3") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(N.at(1), 5).plusAtom(F.at(1), 7).plusAtom(F.at(2), 7).plusAtom(F.at(3), 7).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(N.at(1), F.at(1)).makeBond(N.at(1), F.at(2)).makeBond(N.at(1), F.at(3))
+
+    validateIdealLewisStructure(lewis, "NF3".f)
+
+    assertResult(2) {
+      lewis.getAtom(N.at(1)).loneElectronCount
+    }
+    assertResult(6) {
+      lewis.getAtom(F.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForH2O") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(O.at(1), 6).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(O.at(1), H.at(1)).makeBond(O.at(1), H.at(2))
+
+    validateIdealLewisStructure(lewis, "H2O".f)
+
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(4) {
+      lewis.getAtom(O.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForN2H2") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(N.at(1), 5).plusAtom(N.at(2), 5).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(N.at(1), H.at(1)).makeBond(N.at(2), H.at(2)).makeDoubleBond(N.at(1), N.at(2))
+
+    validateIdealLewisStructure(lewis, "N2H2".f)
+
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(2) {
+      lewis.getAtom(N.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForNO2Ion") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(N.at(1), 5).plusAtom(O.at(1), 6).plusAtom(O.at(2), 7).withCharge(-1).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeDoubleBond(N.at(1), O.at(1)).makeBond(N.at(1), O.at(2))
+
+    validateLewisStructureForIon(lewis, "NO2{-1}".f)
+
+    assertResult(2) {
+      lewis.getAtom(N.at(1)).loneElectronCount
+    }
+    assertResult(4) {
+      lewis.getAtom(O.at(1)).loneElectronCount
+    }
+    assertResult(6) {
+      lewis.getAtom(O.at(2)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForC2H2") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(C.at(1), 4).plusAtom(C.at(2), 4).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(C.at(1), H.at(1)).makeBond(C.at(2), H.at(2)).makeTripleBond(C.at(1), C.at(2))
+
+    validateIdealLewisStructure(lewis, "C2H2".f)
+
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(C.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForC2H4") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(H.at(3), 1).plusAtom(H.at(4), 1)
+        .plusAtom(C.at(1), 4).plusAtom(C.at(2), 4).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(C.at(1), H.at(1)).makeBond(C.at(1), H.at(2)).makeBond(C.at(2), H.at(3)).makeBond(C.at(2), H.at(4))
+        .makeDoubleBond(C.at(1), C.at(2))
+
+    validateIdealLewisStructure(lewis, "C2H4".f)
+
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(C.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForNH4Ion") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(N.at(1), 4)
+        .plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(H.at(3), 1).plusAtom(H.at(4), 1).withCharge(1).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(N.at(1), H.at(1)).makeBond(N.at(1), H.at(2)).makeBond(N.at(1), H.at(3)).makeBond(N.at(1), H.at(4))
+
+    validateLewisStructureForIon(lewis, "NH4{1}".f)
+
+    assertResult(0) {
+      lewis.getAtom(N.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(H.at(4)).loneElectronCount
+    }
+  }
+
+  /*
+  test("testCreateLewisStructureForSOCl2") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(S.at(1), 6).plusAtom(O.at(1), 6).plusAtom(Cl.at(1), 7).plusAtom(Cl.at(2), 7).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeDoubleBond(S.at(1), O.at(1)).makeBond(S.at(1), Cl.at(1)).makeBond(S.at(1), Cl.at(2))
+
+    validateIdealLewisStructure(lewis, "SOCl2".f)
+
+    assertResult(0) {
+      lewis.getAtom(S.at(1)).loneElectronCount
+    }
+    assertResult(4) {
+      lewis.getAtom(O.at(1)).loneElectronCount
+    }
+    assertResult(7) {
+      lewis.getAtom(Cl.at(1)).loneElectronCount
+    }
+    assertResult(7) {
+      lewis.getAtom(Cl.at(2)).loneElectronCount
+    }
+  }
+  */
+
+  test("testCreateLewisStructureForCH2O") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(H.at(1), 1).plusAtom(H.at(2), 1).plusAtom(O.at(1), 6).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(C.at(1), H.at(1)).makeBond(C.at(1), H.at(2)).makeDoubleBond(C.at(1), O.at(1))
+
+    validateIdealLewisStructure(lewis, "CH2O".f)
+
+    assertResult(0) {
+      lewis.getAtom(C.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(H.at(1)).loneElectronCount
+    }
+    assertResult(0) {
+      lewis.getAtom(H.at(2)).loneElectronCount
+    }
+    assertResult(4) {
+      lewis.getAtom(O.at(1)).loneElectronCount
+    }
+  }
+
+  test("testCreateLewisStructureForCOCl2") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(O.at(1), 6).plusAtom(Cl.at(1), 7).plusAtom(Cl.at(2), 7).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeDoubleBond(C.at(1), O.at(1)).makeBond(C.at(1), Cl.at(1)).makeBond(C.at(1), Cl.at(2))
+
+    validateIdealLewisStructure(lewis, "COCl2".f)
+
+    assertResult(0) {
+      lewis.getAtom(C.at(1)).loneElectronCount
+    }
+    assertResult(4) {
+      lewis.getAtom(O.at(1)).loneElectronCount
+    }
+    assertResult(6) {
+      lewis.getAtom(Cl.at(1)).loneElectronCount
+    }
+    assertResult(6) {
+      lewis.getAtom(Cl.at(2)).loneElectronCount
+    }
+  }
+
+  test("testPossibleCyanateFormalCharges") {
+    val possibleLewisStructures: Seq[LewisStructure] = Seq(
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(N.at(1), 7).plusAtom(O.at(1), 5).withCharge(-1).build
+        .makeBond(C.at(1), N.at(1)).makeTripleBond(C.at(1), O.at(1)),
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(N.at(1), 5).plusAtom(O.at(1), 7).withCharge(-1).build
+        .makeTripleBond(C.at(1), N.at(1)).makeBond(C.at(1), O.at(1)),
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(N.at(1), 6).plusAtom(O.at(1), 6).withCharge(-1).build
+        .makeDoubleBond(C.at(1), N.at(1)).makeDoubleBond(C.at(1), O.at(1)),
+      LewisStructure.builder.plusAtom(C.at(1), 6).plusAtom(N.at(1), 3).plusAtom(O.at(1), 7).withCharge(-1).build
+        .makeDoubleBond(C.at(1), N.at(1)).makeBond(N.at(1), O.at(1)),
+      LewisStructure.builder.plusAtom(C.at(1), 6).plusAtom(N.at(1), 4).plusAtom(O.at(1), 6).withCharge(-1).build
+        .makeDoubleBond(C.at(1), N.at(1)).makeDoubleBond(N.at(1), O.at(1)),
+    )
+
+    possibleLewisStructures.foreach(lewis => validateLewisStructureForIon(lewis, "CNO{-1}".f))
+
+    val expectedFormalChargeMappings: Seq[Map[AtomKey, Int]] = Seq(
+      Map(C.at(1) -> 0, N.at(1) -> -2, O.at(1) -> 1),
+      Map(C.at(1) -> 0, N.at(1) -> 0, O.at(1) -> -1), // close to ideal, and better than the next one (O is more electronegative than N)
+      Map(C.at(1) -> 0, N.at(1) -> -1, O.at(1) -> 0), // close to ideal
+      Map(C.at(1) -> -2, N.at(1) -> 2, O.at(1) -> -1),
+      Map(C.at(1) -> -2, N.at(1) -> 1, O.at(1) -> 0),
+    )
+
+    assertResult(expectedFormalChargeMappings) {
+      possibleLewisStructures.map(_.formalChargeMapping)
+    }
+  }
+
+  /**
+   * Validate the Lewis structure of a non-ion, expecting an ideal structure where all atom formal charges are 0 and all non-H atoms
+   * obey the octet rule.
+   */
+  private def validateIdealLewisStructure(lewisStruct: LewisStructure, formula: Formula): Unit = {
+    assert(lewisStruct.netCharge == 0)
+
     assertResult(true) {
       lewisStruct.isConnectedGraph
     }
@@ -293,12 +542,34 @@ class LewisStructureTest extends AnyFunSuite {
       lewisStruct.electronCount
     }
 
-    assertResult(lewisStruct.atoms.map(atom => getValenceElectronCount(atom.key.element))) {
-      lewisStruct.atoms.map(atom => lewisStruct.getElectronCount(atom.key))
+    // The ideal of each atom in the Lewis structure having formal charge 0.
+    assertResult(Set(0)) {
+      lewisStruct.atomKeys.map(key => lewisStruct.getFormalCharge(key)).toSet
     }
 
+    // The ideal of each non-hydrogen atom in the Lewis structure obeying the octet rule.
     assertResult(Set(8)) {
       lewisStruct.atoms.filterNot(_.key.element == H).map(atom => lewisStruct.getSurroundingElectronCount(atom.key)).toSet
+    }
+  }
+
+  private def validateLewisStructureForIon(lewisStruct: LewisStructure, formula: Formula): Unit = {
+    assert(lewisStruct.netCharge != 0)
+
+    assertResult(true) {
+      lewisStruct.isConnectedGraph
+    }
+
+    assertResult(formula.atomCounts) {
+      lewisStruct.atomCounts
+    }
+
+    assertResult(formula.charge) {
+      lewisStruct.netCharge
+    }
+
+    assertResult(getValenceElectronCount(formula)) {
+      lewisStruct.electronCount
     }
   }
 }
