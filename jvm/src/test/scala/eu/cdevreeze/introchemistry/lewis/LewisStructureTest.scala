@@ -54,6 +54,50 @@ class LewisStructureTest extends AnyFunSuite {
     }
   }
 
+  test("testCyclicStructure") {
+    val wrongLewis: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(O.at(1), 6).plusAtom(N.at(1), 5).build
+      .makeBond(C.at(1), O.at(1)).makeBond(N.at(1), O.at(1)).makeBond(C.at(1), N.at(1))
+
+    assertResult(true) {
+      wrongLewis.underlyingGraphIsConnected
+    }
+    assertResult(false) {
+      wrongLewis.getUnderlyingUndirectedGraph.hasNoCycles(C.at(1))
+    }
+    assertResult(false) {
+      wrongLewis.underlyingGraphIsTree
+    }
+
+    // Let's change the "order" of an edge.
+    val wrongLewis2: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(O.at(1), 6).plusAtom(N.at(1), 5).build
+      .makeBond(C.at(1), O.at(1)).makeBond(N.at(1), O.at(1)).makeBond(N.at(1), C.at(1))
+
+    assertResult(true) {
+      wrongLewis2.underlyingGraphIsConnected
+    }
+    assertResult(false) {
+      wrongLewis2.getUnderlyingUndirectedGraph.hasNoCycles(C.at(1))
+    }
+    assertResult(false) {
+      wrongLewis2.underlyingGraphIsTree
+    }
+
+    // Let's add an unconnected vertex.
+    val wrongLewis3: LewisStructure =
+      LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(O.at(1), 6).plusAtom(N.at(1), 5).plusAtom(C.at(2), 4).build
+        .makeBond(C.at(1), O.at(1)).makeBond(N.at(1), O.at(1)).makeBond(N.at(1), C.at(1)) // C.at(2) is unconnected
+
+    assertResult(false) {
+      wrongLewis3.underlyingGraphIsConnected
+    }
+    assertResult(false) {
+      wrongLewis3.getUnderlyingUndirectedGraph.hasNoCycles(C.at(1))
+    }
+    assertResult(false) {
+      wrongLewis3.underlyingGraphIsTree
+    }
+  }
+
   test("testElementCa") {
     val lewisForCa: LewisStructure = LewisStructure.builder.plusAtom(Ca.at(1), 2).build
 

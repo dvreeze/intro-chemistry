@@ -21,7 +21,7 @@ import eu.cdevreeze.introchemistry.internal.UndirectedGraph.Edge
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.Atom
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.AtomKey
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.Bond
-import eu.cdevreeze.introchemistry.orbitals.AufbauPrinciple
+import eu.cdevreeze.introchemistry.lewis.LewisStructureApi.AbstractLewisStructure
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 
 /**
@@ -32,8 +32,10 @@ import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
 final class LewisStructure(
   val atoms: Seq[Atom],
   val bonds: Seq[Bond],
-  val netCharge: Int
-) {
+  val netCharge: Int) extends AbstractLewisStructure {
+
+  type This = LewisStructure
+
   require(atoms.nonEmpty, s"Expected at least one atom")
   require(atoms.size == atoms.map(_.key).distinct.size, s"Duplicate atom keys not allowed")
 
@@ -44,55 +46,6 @@ final class LewisStructure(
   require(
     netCharge == atomKeys.map(getFormalCharge).sum,
     s"The formal charges of the atoms do not add up to the net charge of the Lewis structure")
-
-  def atomKeys: Seq[AtomKey] = atoms.map(_.key)
-
-  /**
-   * Returns the atom counts per element. It can be matched against the atom counts of a corresponding formula.
-   */
-  def atomCounts: Map[ElementSymbol, Int] = atoms.groupBy(_.key.element).view.mapValues(_.size).toMap
-
-  def getAtom(key: AtomKey): Atom = atoms.find(_.key == key).getOrElse(sys.error(s"Could not find atom $key"))
-
-  def findBonds(key: AtomKey): Seq[Bond] = bonds.filter(_.touches(key))
-
-  def getElectronCount(key: AtomKey): Int = getAtom(key).loneElectronCount + findBonds(key).size
-
-  def electronCount: Int = atoms.map(atom => getElectronCount(atom.key)).sum
-
-  /**
-   * Returns a count of the own and shared electrons of the atom. Typically the result should be 8, as per the octet rule.
-   */
-  def getSurroundingElectronCount(key: AtomKey): Int = getAtom(key).loneElectronCount + 2 * findBonds(key).size
-
-  def obeysOctetRule(key: AtomKey): Boolean = getSurroundingElectronCount(key) == 8
-
-  /**
-   * Returns the formal charge of the given atom, which is the valence electron count of the element, minus the electron
-   * count of this atom in the Lewis structure (lone or bound). Ideally it is 0, and otherwise it is typically as close to 0 as possible
-   * in the Lewis structure.
-   */
-  def getFormalCharge(key: AtomKey): Int = {
-    AufbauPrinciple.getValenceElectronCount(key.element) - getElectronCount(key)
-  }
-
-  /**
-   * Returns a mapping from all atom keys to their formal charges in the Lewis structure.
-   */
-  def computeFormalChargeMapping: Map[AtomKey, Int] = {
-    atomKeys.map(key => key -> getFormalCharge(key)).toMap
-  }
-
-  /**
-   * A Lewis structure must be a connected undirected graph, ignoring double bonds etc. This function returns true if that is indeed the case.
-   */
-  def underlyingGraphIsConnected: Boolean = getUnderlyingUndirectedGraph.isConnectedGraph
-
-  /**
-   * Returns true if the underlying undirected graph (ignoring double bonds etc.) is a tree. That is, returns true if the
-   * underlying undirected graph is a connected acyclic undirected graph.
-   */
-  def underlyingGraphIsTree: Boolean = getUnderlyingUndirectedGraph.isTree
 
   /**
    * Returns true if both atoms (that must occur in this Lewis structure) can share (currently lone) electrons.
@@ -185,8 +138,13 @@ object LewisStructure {
   final case class Builder(
     val atoms: Seq[Atom],
     val bonds: Seq[Bond],
-    val netCharge: Int
-  ) {
+    val netCharge: Int) extends AbstractLewisStructure {
+
+    type This = Builder
+
+    def plusRawAtom(key: AtomKey): Builder = {
+      plusAtom(key, 0)
+    }
 
     def plusAtom(key: AtomKey, loneElectronCount: Int): Builder = {
       this.copy(atoms = this.atoms.appended(Atom(key, loneElectronCount)))
@@ -197,6 +155,8 @@ object LewisStructure {
     }
 
     def plusBonds(from: AtomKey, to: AtomKey, arity: Int): Builder = {
+      require(arity >= 1, s"Arity must be at least 1")
+
       1.to(arity).foldLeft(this) { case (accBuilder, n) =>
         accBuilder.plusBond(from, to)
       }
@@ -204,6 +164,20 @@ object LewisStructure {
 
     def withCharge(newCharge: Int): Builder = {
       this.copy(netCharge = newCharge)
+    }
+
+    def updateLoneElectronCount(key: AtomKey, f: Int => Int): Builder = {
+      this.copy(atoms = this.atoms.map { atom =>
+        if (atom.key == key) atom.copy(loneElectronCount = f(atom.loneElectronCount)) else atom
+      })
+    }
+
+    def incrementLoneElectronCount(key: AtomKey, amount: Int): Builder = {
+      updateLoneElectronCount(key, _ + amount)
+    }
+
+    def getUnderlyingUndirectedGraph: UndirectedGraph[AtomKey] = {
+      UndirectedGraph.fromVertices(atomKeys.toSet).plusEdges(bonds.map(b => Edge(b.from, b.to)).toSet)
     }
 
     def build: LewisStructure = new LewisStructure(atoms, bonds, netCharge)
