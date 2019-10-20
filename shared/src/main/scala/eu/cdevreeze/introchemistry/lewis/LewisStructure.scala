@@ -16,6 +16,8 @@
 
 package eu.cdevreeze.introchemistry.lewis
 
+import eu.cdevreeze.introchemistry.internal.UndirectedGraph
+import eu.cdevreeze.introchemistry.internal.UndirectedGraph.Edge
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.Atom
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.AtomKey
 import eu.cdevreeze.introchemistry.lewis.LewisStructure.Bond
@@ -77,28 +79,20 @@ final class LewisStructure(
   /**
    * Returns a mapping from all atom keys to their formal charges in the Lewis structure.
    */
-  def formalChargeMapping: Map[AtomKey, Int] = {
+  def computeFormalChargeMapping: Map[AtomKey, Int] = {
     atomKeys.map(key => key -> getFormalCharge(key)).toMap
   }
 
   /**
-   * A Lewis structure must be a connected undirected graph. This function returns true if that is indeed the case.
+   * A Lewis structure must be a connected undirected graph, ignoring double bonds etc. This function returns true if that is indeed the case.
    */
-  def isConnectedGraph: Boolean = {
-    val bondsByAtomFroms: Map[AtomKey, Seq[Bond]] = bonds.groupBy(_.from)
-    val bondsByAtomTos: Map[AtomKey, Seq[Bond]] = bonds.groupBy(_.to)
+  def underlyingGraphIsConnected: Boolean = getUnderlyingUndirectedGraph.isConnectedGraph
 
-    val bondsByAtomKeys: Map[AtomKey, Seq[Bond]] =
-      bondsByAtomFroms.keySet.union(bondsByAtomTos.keySet).toSeq
-        .map(ak => ak -> bondsByAtomFroms.getOrElse(ak, Seq.empty).appendedAll(bondsByAtomTos.getOrElse(ak, Seq.empty)).distinct)
-        .toMap
-
-    val firstAtomKey: AtomKey = atoms.head.key
-
-    val connectedAtomsOrSelf: Set[AtomKey] = findAllConnectedAtomsOrSelf(firstAtomKey, Set.empty, bondsByAtomKeys)
-
-    connectedAtomsOrSelf == atoms.map(_.key).toSet
-  }
+  /**
+   * Returns true if the underlying undirected graph (ignoring double bonds etc.) is a tree. That is, returns true if the
+   * underlying undirected graph is a connected acyclic undirected graph.
+   */
+  def underlyingGraphIsTree: Boolean = getUnderlyingUndirectedGraph.isTree
 
   /**
    * Returns true if both atoms (that must occur in this Lewis structure) can share (currently lone) electrons.
@@ -136,20 +130,8 @@ final class LewisStructure(
     makeBond(atomKey1, atomKey2).makeBond(atomKey1, atomKey2).makeBond(atomKey1, atomKey2)
   }
 
-  private def findAllConnectedAtomsOrSelf(key: AtomKey, visited: Set[AtomKey], bondsByAtomKeys: Map[AtomKey, Seq[Bond]]): Set[AtomKey] = {
-    val connectedNonVisited: Set[AtomKey] =
-      bondsByAtomKeys.getOrElse(key, Seq.empty).flatMap(b => List(b.from, b.to)).filterNot(visited).filterNot(Set(key)).toSet
-
-    if (connectedNonVisited.isEmpty) {
-      visited.union(Set(key))
-    } else {
-      val nextVisited: Set[AtomKey] = visited.union(connectedNonVisited).union(Set(key))
-
-      connectedNonVisited.ensuring(!_.contains(key)).foldLeft(nextVisited) { case (accVisited, ak) =>
-        // Recursive call
-        findAllConnectedAtomsOrSelf(ak, accVisited, bondsByAtomKeys)
-      }
-    }
+  def getUnderlyingUndirectedGraph: UndirectedGraph[AtomKey] = {
+    UndirectedGraph.fromVertices(atomKeys.toSet).plusEdges(bonds.map(b => Edge(b.from, b.to)).toSet)
   }
 }
 

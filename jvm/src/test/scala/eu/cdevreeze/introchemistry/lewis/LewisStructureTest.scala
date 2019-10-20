@@ -38,7 +38,7 @@ class LewisStructureTest extends AnyFunSuite {
     val lewisForN: LewisStructure = LewisStructure.builder.plusAtom(N.at(1), 5).build
 
     assertResult(true) {
-      lewisForN.isConnectedGraph
+      lewisForN.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(N)) {
@@ -50,7 +50,7 @@ class LewisStructureTest extends AnyFunSuite {
     val wrongLewis: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(H.at(1), 1).build
 
     assertResult(false) {
-      wrongLewis.isConnectedGraph
+      wrongLewis.underlyingGraphIsConnected
     }
   }
 
@@ -58,7 +58,7 @@ class LewisStructureTest extends AnyFunSuite {
     val lewisForCa: LewisStructure = LewisStructure.builder.plusAtom(Ca.at(1), 2).build
 
     assertResult(true) {
-      lewisForCa.isConnectedGraph
+      lewisForCa.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(Ca)) {
@@ -70,7 +70,7 @@ class LewisStructureTest extends AnyFunSuite {
     val lewisForC: LewisStructure = LewisStructure.builder.plusAtom(C.at(1), 4).build
 
     assertResult(true) {
-      lewisForC.isConnectedGraph
+      lewisForC.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(C)) {
@@ -88,7 +88,7 @@ class LewisStructureTest extends AnyFunSuite {
     val lewisForH: LewisStructure = LewisStructure.builder.plusAtom(H.at(1), 1).build
 
     assertResult(true) {
-      lewisForH.isConnectedGraph
+      lewisForH.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(H)) {
@@ -100,7 +100,7 @@ class LewisStructureTest extends AnyFunSuite {
     val lewisForNe: LewisStructure = LewisStructure.builder.plusAtom(Ne.at(1), 8).build
 
     assertResult(true) {
-      lewisForNe.isConnectedGraph
+      lewisForNe.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(Ne)) {
@@ -117,7 +117,7 @@ class LewisStructureTest extends AnyFunSuite {
         .build
 
     assertResult(true) {
-      lewisForCO2.isConnectedGraph
+      lewisForCO2.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(C)) {
@@ -157,7 +157,7 @@ class LewisStructureTest extends AnyFunSuite {
         .build
 
     assertResult(true) {
-      lewisForN2.isConnectedGraph
+      lewisForN2.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(N)) {
@@ -192,7 +192,7 @@ class LewisStructureTest extends AnyFunSuite {
         .build
 
     assertResult(true) {
-      lewisForCH4.isConnectedGraph
+      lewisForCH4.underlyingGraphIsTree
     }
 
     assertResult(getValenceElectronCount(C)) {
@@ -221,7 +221,7 @@ class LewisStructureTest extends AnyFunSuite {
       LewisStructure.builder.plusAtom(Cl.at(1), 7).plusAtom(Cl.at(2), 7).build
 
     assertResult(false) {
-      wrongLewisForCl2.isConnectedGraph
+      wrongLewisForCl2.underlyingGraphIsConnected
     }
 
     assertResult("Cl2".f.atomCounts) {
@@ -239,7 +239,7 @@ class LewisStructureTest extends AnyFunSuite {
         .build
 
     assertResult(true) {
-      lewisForNH3.isConnectedGraph
+      lewisForNH3.underlyingGraphIsTree
     }
 
     assertResult(true) {
@@ -494,6 +494,24 @@ class LewisStructureTest extends AnyFunSuite {
     }
   }
 
+  test("testCreateLewisStructureForXeF2") {
+    val startLewis: LewisStructure =
+      LewisStructure.builder.plusAtom(Xe.at(1), 8).plusAtom(F.at(1), 7).plusAtom(F.at(2), 7).build
+        .ensuring(_.bonds.isEmpty)
+
+    val lewis: LewisStructure =
+      startLewis.makeBond(Xe.at(1), F.at(1)).makeBond(Xe.at(1), F.at(2))
+
+    validateLewisStructure(lewis, "XeF2".f) // 10 electrons surrounding Xe
+
+    assertResult(6) {
+      lewis.getAtom(Xe.at(1)).loneElectronCount
+    }
+    assertResult(6) {
+      lewis.getAtom(F.at(1)).loneElectronCount
+    }
+  }
+
   test("testPossibleCyanateFormalCharges") {
     val possibleLewisStructures: Seq[LewisStructure] = Seq(
       LewisStructure.builder.plusAtom(C.at(1), 4).plusAtom(N.at(1), 7).plusAtom(O.at(1), 5).withCharge(-1).build
@@ -519,7 +537,7 @@ class LewisStructureTest extends AnyFunSuite {
     )
 
     assertResult(expectedFormalChargeMappings) {
-      possibleLewisStructures.map(_.formalChargeMapping)
+      possibleLewisStructures.map(_.computeFormalChargeMapping)
     }
   }
 
@@ -531,7 +549,7 @@ class LewisStructureTest extends AnyFunSuite {
     assert(lewisStruct.netCharge == 0)
 
     assertResult(true) {
-      lewisStruct.isConnectedGraph
+      lewisStruct.underlyingGraphIsTree
     }
 
     assertResult(formula.atomCounts) {
@@ -557,7 +575,7 @@ class LewisStructureTest extends AnyFunSuite {
     assert(lewisStruct.netCharge != 0)
 
     assertResult(true) {
-      lewisStruct.isConnectedGraph
+      lewisStruct.underlyingGraphIsTree
     }
 
     assertResult(formula.atomCounts) {
@@ -566,6 +584,26 @@ class LewisStructureTest extends AnyFunSuite {
 
     assertResult(formula.charge) {
       lewisStruct.netCharge
+    }
+
+    assertResult(getValenceElectronCount(formula)) {
+      lewisStruct.electronCount
+    }
+  }
+
+  /**
+   * Validate the Lewis structure of a non-ion, but not expecting an ideal structure where all atom formal charges would be 0 and
+   * where all non-H atoms would obey the octet rule.
+   */
+  private def validateLewisStructure(lewisStruct: LewisStructure, formula: Formula): Unit = {
+    assert(lewisStruct.netCharge == 0)
+
+    assertResult(true) {
+      lewisStruct.underlyingGraphIsTree
+    }
+
+    assertResult(formula.atomCounts) {
+      lewisStruct.atomCounts
     }
 
     assertResult(getValenceElectronCount(formula)) {
