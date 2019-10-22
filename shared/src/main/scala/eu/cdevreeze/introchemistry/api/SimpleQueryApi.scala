@@ -30,6 +30,8 @@ final class SimpleQueryApi(val periodicTable: PeriodicTable) extends SimpleStoic
 
 object SimpleQueryApi {
 
+  def apply(periodicTable: PeriodicTable): SimpleQueryApi = new SimpleQueryApi(periodicTable)
+
   // Conversions from strings to formulas or chemical equations
 
   /**
