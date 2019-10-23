@@ -65,21 +65,37 @@ import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
  * Work is force times distance, or N times m, which is Nm, or Joule (J). When working with gases, work can be defined as
  * the negated pressure times the change in volume. That is, w equals -P * delta(V). This work is known as "PV-work".
  *
- * Does that make sense in terms of units? Yes, it does. Pascal is N / (m * m). Volume is m * m * m. So work has unit
+ * Does that make sense in terms of units? Yes, it certainly does. Pascal is N / (m * m). Volume is m * m * m. So work has unit
  * Nm, or Joule, by multiplying these 2 units.
  *
  * Typically work is given in L * atm, that is, liters times atmosphere.
+ *
+ * Another important term is enthalpy (H). It is defined as E + P * V, so energy plus pressure times volume. We do not know the
+ * enthalpy of a substance, however, but we can measure the change in enthalpy (without knowing the final and initial values).
+ * In particular, the (change in) enthalpy of a reaction is the enthalpy of the products minus the enthalpy of the reactants.
+ * This enthalpy change is a negative number for exothermic reactions, and it is a positive number for endothermic reactions.
+ *
+ * For reactions in constant pressure environments, the enthalpy change equals the heat change.
  *
  * @author Chris de Vreeze
  */
 final class ThermochemistrySupport(val periodicTable: PeriodicTable) {
 
   /**
-   * Returns the PV work in Joule, from a pressure value in Pascal and a delta of the volume in cubic meter.
+   * Returns the "PV work" in Joule, from a pressure value in Pascal and a delta of the volume in cubic meter.
    */
   def pvWork(pressureInPascal: BigDecimal, deltaVolumeInCubicMeter: BigDecimal): BigDecimal = {
     -pressureInPascal * deltaVolumeInCubicMeter
   }
+
+  // TODO Delta energy is heat plus work. For work we can typically fill in -P * V.
+
+  // TODO Specific heat, in Joule per kg Kelvin. Then heat capacity is specific heat times mass.
+  // Then work is -P * V, but it is also R * T * delta-n, which is specific heat capacity times temperature (in Kelvin) times
+  // the change in moles of gas (from reactants to products)
+
+  // Always start with the fact that the heat (change) of the system is minus the heat (change) of the surroundings (conservation of energy).
+  // The system is typically a reaction.
 }
 
 object ThermochemistrySupport {
@@ -91,4 +107,10 @@ object ThermochemistrySupport {
   val AtmosphereInPascal: BigDecimal = BigDecimal(1.01325e5)
 
   val LiterAtmInJoule: BigDecimal = LiterInCubicMeter * AtmosphereInPascal // 101.3
+
+  /**
+   * Small calorie in Joule. Note that a cal (small calorie) is the energy needed to increase the temperature of 1 g of water
+   * by 1 Kelvin at a pressure of 1 atm. As an aside, note that a large calorie (Cal), or food calorie, is the same for 1 kg instead of g.
+   */
+  val SmallCalorieInJoule: BigDecimal = BigDecimal(4.184)
 }
