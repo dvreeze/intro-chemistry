@@ -94,7 +94,7 @@ final class ThermochemistrySupport(val periodicTable: PeriodicTable) {
   // Work is -P * V. The ideal gas law says that P * delta-V = delta-n * R * T, where delta-n is the change in moles of gas
   // (from reactants to products), T is the temperature and R is the ideal gas constant.
 
-  // Always start with the fact that the heat (change) of the system is minus the heat (change) of the surroundings (conservation of energy).
+  // Always start with the law that the heat (change) of the system is minus the heat (change) of the surroundings (conservation of energy).
   // The system is typically a reaction.
 }
 
