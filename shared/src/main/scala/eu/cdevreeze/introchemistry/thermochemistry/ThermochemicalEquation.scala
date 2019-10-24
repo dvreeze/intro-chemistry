@@ -19,8 +19,8 @@ package eu.cdevreeze.introchemistry.thermochemistry
 import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
 
 /**
- * A thermochemical equation. It is a balanced chemical equation along with an enthalpy change. All reactants and products must
- * have an explicitly filled in phase.
+ * A thermochemical equation. It is a balanced chemical equation along with an enthalpy change in kJ (not in Joule!).
+ * All reactants and products must have an explicitly filled in phase.
  *
  * The equation typically but not necessarily describes a chemical reaction. It could also describe a phase change, like from ice to liquid water.
  * The enthalpy is positive for an endothermic reaction. It is negative for an exothermic reaction.
@@ -34,10 +34,21 @@ import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
  *
  * @author Chris de Vreeze
  */
-final case class ThermochemicalEquation(underlyingEquation: ChemicalEquation, enthalpyInKiloJoule: BigDecimal) {
+final case class ThermochemicalEquation(underlyingEquation: ChemicalEquation, deltaEnthalpyInKiloJoule: BigDecimal) {
   require(underlyingEquation.isBalanced, s"Not a balanced chemical equation: $underlyingEquation")
   require(
     underlyingEquation.reactantsAndProducts.forall(_.phaseOption.nonEmpty),
     s"Missing phase in at least one reactant/product. Equation: $underlyingEquation")
 
+}
+
+object ThermochemicalEquation {
+
+  def usingKiloJoule(underlyingEquation: ChemicalEquation, deltaEnthalpyInKiloJoule: BigDecimal): ThermochemicalEquation = {
+    ThermochemicalEquation(underlyingEquation, deltaEnthalpyInKiloJoule)
+  }
+
+  def usingJoule(underlyingEquation: ChemicalEquation, deltaEnthalpyInJoule: BigDecimal): ThermochemicalEquation = {
+    ThermochemicalEquation(underlyingEquation, deltaEnthalpyInJoule / 1000)
+  }
 }

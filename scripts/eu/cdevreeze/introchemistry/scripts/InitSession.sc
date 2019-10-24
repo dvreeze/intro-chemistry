@@ -9,6 +9,7 @@ import eu.cdevreeze.introchemistry.periodictable.load._, eu.cdevreeze.introchemi
 import eu.cdevreeze.introchemistry.internal._, eu.cdevreeze.introchemistry.api._
 import eu.cdevreeze.introchemistry.particlesandwaves._, eu.cdevreeze.introchemistry.orbitals._
 import eu.cdevreeze.introchemistry.lewis._, eu.cdevreeze.introchemistry.thermochemistry._
+import eu.cdevreeze.introchemistry.typeclasses.instances.ShowThermochemicalEquations._
 import eu.cdevreeze.introchemistry.typeclasses.instances.ShowChemicalEquations._
 import eu.cdevreeze.introchemistry.typeclasses.instances.ShowElectronConfigs._
 import eu.cdevreeze.introchemistry.typeclasses.instances.ShowLewisStructures._

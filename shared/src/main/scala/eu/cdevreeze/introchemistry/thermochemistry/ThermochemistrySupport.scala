@@ -77,25 +77,76 @@ import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
  *
  * For reactions in constant pressure environments, the enthalpy change equals the heat change.
  *
+ * When doing thermochemistry computations, always start with the law of conservation of energy. That is, the heat of the system
+ * is the opposite in sign of the heat of the surroundings. This is also the basis for heat transfer equations. When two substances
+ * of different temperatures are mixed, both can be considered each others surroundings, assuming no loss of heat to the outside
+ * world. Then we get an equation like this (e.g. with only 1 variable, namely final-temp, and with A warming and B cooling):
+ * specific-heat-A * mass-A * (final-temp - start-temp-A) = specific-heat-B * mass-B * (start-temp-B - final-temp)
+ *
  * @author Chris de Vreeze
  */
 final class ThermochemistrySupport(val periodicTable: PeriodicTable) {
 
+  import ThermochemistrySupport._
+
   /**
    * Returns the "PV work" in Joule, from a pressure value in Pascal and a delta of the volume in cubic meter.
+   * The resulting work is the pressure times -1, multiplied by the delta of the volume.
+   *
+   * PV work applies to expansion or compressions of gases. Note that for compression the delta of the volume is negative
+   * so the work is positive, and that for expansion the delta of the volume is positive so the work is negative.
    */
   def pvWork(pressureInPascal: BigDecimal, deltaVolumeInCubicMeter: BigDecimal): BigDecimal = {
     -pressureInPascal * deltaVolumeInCubicMeter
   }
 
-  // TODO Delta energy is heat plus work. For work we can typically fill in -P * V.
+  /**
+   * Returns the volume of the gas in cubic meter, given the moles of gas, its temperature in Kelvin, and its pressure in Pascal.
+   * The gas is assumed to be an ideal gas. That is, the ideal gas law (or general gas equation) is assumed to hold.
+   * It says (assuming SI units): pressure * volume = moles * IdealGasConstantInJoulePerKelvinMole * temperature.
+   * Put differently: pressure * delta-volume = delta-moles * IdealGasConstantInJoulePerKelvinMole * temperature.
+   *
+   * From the first of these equations it follows what result this function returns, by dividing LHS and RHS by the pressure.
+   * Given the results of this function as 2 volumes (in cubic meter), and the pressure, we can compute the PV work with function pvWork.
+   *
+   * Note that this function and its implementation make sense from the perspective of the units used.
+   * Indeed, mol * (Joule / (Kelvin * mol)) * Kelvin / Pascal = mol * N * m / (Kelvin * mol) * Kelvin / (N / (m * m)).
+   * This is equal to: m * m * m, which is cubic meter.
+   */
+  def volumeOfIdealGasInCubicMeter(molesOfGas: BigDecimal, temperatureInKelvin: BigDecimal, pressureInPascal: BigDecimal): BigDecimal = {
+    molesOfGas * IdealGasConstantInJoulePerKelvinMole * temperatureInKelvin / pressureInPascal
+  }
 
-  // TODO Specific heat, in Joule per kg Kelvin. Then heat capacity is specific heat times mass.
-  // Work is -P * V. The ideal gas law says that P * delta-V = delta-n * R * T, where delta-n is the change in moles of gas
-  // (from reactants to products), T is the temperature and R is the ideal gas constant.
+  /**
+   * Returns the delta of the energy in Joule, as the sum of the heat (in Joule) and the work (in Joule). Note that at
+   * constant pressure the heat is the change of enthalpy.
+   *
+   * In the case of compression or expansion of gases, the work is typically PV work (see method pvWork).
+   *
+   * Note that work done on the system (the reaction, mostly) is positive and work done by the system on its surroundings
+   * is negative. Similarly, heat is positive for endothermic reactions (absorbing heat) and negative for exothermic reactions
+   * (giving off heat).
+   */
+  def deltaEnergyFromHeatAndWork(heatInJoule: BigDecimal, workInJoule: BigDecimal): BigDecimal = {
+    heatInJoule + workInJoule
+  }
 
-  // Always start with the law that the heat (change) of the system is minus the heat (change) of the surroundings (conservation of energy).
-  // The system is typically a reaction.
+  /**
+   * Like method deltaEnergyFromHeatAndWork, but taking and returning kilo-Joules instead of Joules.
+   */
+  def deltaEnergyFromHeatAndWorkInKiloJoule(heatInKiloJoule: BigDecimal, workInKiloJoule: BigDecimal): BigDecimal = {
+    heatInKiloJoule + workInKiloJoule
+  }
+
+  def convertDegreesCelsiusToKelvin(temperatureInDegreesCelsius: BigDecimal): BigDecimal = {
+    temperatureInDegreesCelsius + BigDecimal(273.15)
+  }
+
+  def convertKelvinToDegreesCelsius(temperatureInKelvin: BigDecimal): BigDecimal = {
+    temperatureInKelvin - BigDecimal(273.15)
+  }
+
+  // TODO Specific heat, in Joule per kg Kelvin. Then heat capacity is specific heat times mass. Support heat transfer equations.
 }
 
 object ThermochemistrySupport {
@@ -110,9 +161,11 @@ object ThermochemistrySupport {
 
   /**
    * Small calorie in Joule. Note that a cal (small calorie) is the energy needed to increase the temperature of 1 g of water
-   * by 1 Kelvin at a pressure of 1 atm. As an aside, note that a large calorie (Cal), or food calorie, is the same for 1 kg instead of g.
+   * by 1 Kelvin at a pressure of 1 atm. As an aside, note that a large calorie (Cal or kcal), or food calorie, is the same for 1 kg instead of g.
    */
   val SmallCalorieInJoule: BigDecimal = BigDecimal(4.184)
+
+  val LargeCalorieInJoule: BigDecimal = 1000 * SmallCalorieInJoule
 
   /**
    * The ideal gas constant, in J / (K * mol).
