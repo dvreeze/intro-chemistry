@@ -37,34 +37,24 @@ object ShowLewisStructures {
    * Returns a string representation of the atom key. For example: Ca.at(1).
    */
   implicit val showAtomKey: Show[AtomKey] = Show.show { value: AtomKey =>
-    s"${value.element}.at(${value.seqNr})"
+    value.toString
   }
 
   // Show type class instance for Atom
 
   implicit val showAtom: Show[Atom] = Show.show { value: Atom =>
-    s"Atom(${showAtomKey.show(value.key)}, ${value.loneElectronCount})"
+    value.toString
   }
 
   // Show type class instance for Bond
 
   implicit val showBond: Show[Bond] = Show.show { value: Bond =>
-    s"Bond(${showAtomKey.show(value.from)}, ${showAtomKey.show(value.to)}))"
+    value.toString
   }
 
   // Show type class instance for LewisStructure
 
   implicit val showLewisStructure: Show[LewisStructure] = Show.show { value: LewisStructure =>
-    ShowableLewisStructure(
-      value.atoms.map(v => showAtom.show(v)),
-      value.bonds.map(v => showBond.show(v)),
-      value.netCharge
-    ).toString
+    value.builder.toString
   }
-
-  private final case class ShowableLewisStructure(
-    atoms: Seq[String],
-    bonds: Seq[String],
-    netCharge: Int
-  )
 }

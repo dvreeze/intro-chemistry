@@ -47,6 +47,15 @@ final class LewisStructure(
     netCharge == atomKeys.map(getFormalCharge).sum,
     s"The formal charges of the atoms do not add up to the net charge of the Lewis structure")
 
+  override def equals(other: Any): Boolean = other match {
+    case other: LewisStructure => this.builder == other.builder
+    case _ => false
+  }
+
+  override def hashCode: Int = builder.hashCode
+
+  override def toString: String = builder.toString
+
   /**
    * Returns true if both atoms (that must occur in this Lewis structure) can share (currently lone) electrons.
    * The only criterion used is the availability of at least one lone electron in boty atoms.
@@ -86,6 +95,8 @@ final class LewisStructure(
   def getUnderlyingUndirectedGraph: UndirectedGraph[AtomKey] = {
     UndirectedGraph.fromVertices(atomKeys.toSet).plusEdges(bonds.map(b => Edge(b.from, b.to)).toSet)
   }
+
+  def builder: LewisStructure.Builder = LewisStructure.Builder(atoms, bonds, netCharge)
 }
 
 object LewisStructure {

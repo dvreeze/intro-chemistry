@@ -147,6 +147,20 @@ final class ThermochemistrySupport(val periodicTable: PeriodicTable) {
   }
 
   // TODO Specific heat, in Joule per kg Kelvin. Then heat capacity is specific heat times mass. Support heat transfer equations.
+
+  // Different methods to determine the enthalpy of a reaction:
+
+  // Standard enthalpy of formation: the resulting heat change when 1 mole of a compound is formed from its elements in their
+  // most stable form, at a pressure of 1 atm. (Standard state is 1 atm.) Then the standard enthalpy of a reaction (delta-H), so
+  // the enthalpy of the reaction carried out at 1 atm, follows from the standard enthalpies of formation of the products
+  // minus those of the reactants. This is called the direct method.
+
+  // The indirect method, or Hess's Law. It says that the change in enthalpy is the same whether the reaction takes place in
+  // one step or in multiple steps. The enthalpy of a reaction is a state function, after all.
+
+  // Enthalpy of a reaction can be estimated using bond energies. Bond energy, or dissociation energy, is the enthalpy change
+  // required to break some bond in 1 mole of gaseous molecules. Then the enthalpy of a reaction is estimated by the sum of
+  // bond energies of the bonds broken minus the sum of the energies of the bonds formed. For this you need the Lewis diagrams.
 }
 
 object ThermochemistrySupport {

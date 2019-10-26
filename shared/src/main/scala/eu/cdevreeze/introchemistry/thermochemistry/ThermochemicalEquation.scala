@@ -40,6 +40,53 @@ final case class ThermochemicalEquation(underlyingEquation: ChemicalEquation, de
     underlyingEquation.reactantsAndProducts.forall(_.phaseOption.nonEmpty),
     s"Missing phase in at least one reactant/product. Equation: $underlyingEquation")
 
+  def normalize: ThermochemicalEquation = {
+    this.withoutDuplicateFormulas.normalizeCoefficients
+  }
+
+  def normalizeCoefficients: ThermochemicalEquation = {
+    val newUnderlyingEquation = underlyingEquation.normalizeCoefficients
+
+    assert(underlyingEquation.reactants.head.quantity % newUnderlyingEquation.reactants.head.quantity == 0)
+    val denominator: Int = underlyingEquation.reactants.head.quantity / newUnderlyingEquation.reactants.head.quantity
+
+    ThermochemicalEquation(newUnderlyingEquation, deltaEnthalpyInKiloJoule / denominator)
+  }
+
+  def withoutDuplicateFormulas: ThermochemicalEquation = {
+    ThermochemicalEquation(underlyingEquation.withoutDuplicateFormulas, deltaEnthalpyInKiloJoule)
+  }
+
+  def multiplyCoefficients(factor: Int): ThermochemicalEquation = {
+    ThermochemicalEquation(underlyingEquation.multiplyCoefficients(factor), deltaEnthalpyInKiloJoule * factor)
+  }
+
+  def swapReactantsAndProducts: ThermochemicalEquation = {
+    ThermochemicalEquation(underlyingEquation.swapReactantsAndProducts, -deltaEnthalpyInKiloJoule)
+  }
+
+  /**
+   * Adds the given thermochemical equation to this equation, matching strictly on phases as well.
+   * Adding means adding for the underlying chemical equation (see ChemicalEquation.add) as well as adding the enthalpy changes.
+   */
+  def add(otherThermochemicalEquation: ThermochemicalEquation): ThermochemicalEquation = {
+    ThermochemicalEquation(
+      underlyingEquation.add(otherThermochemicalEquation.underlyingEquation),
+      deltaEnthalpyInKiloJoule + otherThermochemicalEquation.deltaEnthalpyInKiloJoule)
+  }
+
+  /**
+   * Returns the delta of the enthalpy for one mole of the given product. The phase is also used in matching the product.
+   * If no such product occurs in the equation, an exception is thrown.
+   *
+   * This function is useful for computing the standard enthalpy of formation.
+   */
+  def deltaEnthalpyInKiloJouleForOneMoleOfProduct(product: ChemicalEquation.FormulaPhase): BigDecimal = {
+    val molesOfProductInEquation: Int = underlyingEquation.getProductQuantity(product)
+    require(molesOfProductInEquation != BigDecimal(0)) // Reliable?
+
+    deltaEnthalpyInKiloJoule / molesOfProductInEquation
+  }
 }
 
 object ThermochemicalEquation {

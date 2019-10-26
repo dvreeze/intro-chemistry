@@ -20,6 +20,7 @@ import eu.cdevreeze.introchemistry.periodictable.PeriodicTable
 import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
 import eu.cdevreeze.introchemistry.stoichiometry.Formula
 import eu.cdevreeze.introchemistry.stoichiometry.Phase
+import eu.cdevreeze.introchemistry.thermochemistry.ThermochemicalEquation
 
 /**
  * Simple chemistry query API, combining the different APIs into one "entry point".
@@ -51,11 +52,37 @@ object SimpleQueryApi {
   }
 
   /**
+   * Adding a Phase to a formula.
+   */
+  implicit class AddPhase(formula: Formula) {
+
+    def withOptPhase(phaseOption: Option[Phase]): ChemicalEquation.FormulaPhase = ChemicalEquation.FormulaPhase(formula, phaseOption)
+
+    def withoutPhase: ChemicalEquation.FormulaPhase = withOptPhase(None)
+
+    def asGas: ChemicalEquation.FormulaPhase = withOptPhase(Some(Phase.Gas))
+
+    def asLiquid: ChemicalEquation.FormulaPhase = withOptPhase(Some(Phase.Liquid))
+
+    def asSolid: ChemicalEquation.FormulaPhase = withOptPhase(Some(Phase.Solid))
+
+    def aqueous: ChemicalEquation.FormulaPhase = withOptPhase(Some(Phase.Aqueous))
+  }
+
+  /**
    * Postfix operator to turn a string into a ChemicalEquation.
    */
   implicit class ToChemicalEquation(chemicalEquationString: String) {
 
     def ce: ChemicalEquation = ChemicalEquation(chemicalEquationString)
+  }
+
+  /**
+   * Postfix operator to turn a ChemicalEquation and a delta of the enthalph in kJ into a ThermochemicalEquation.
+   */
+  implicit class ToThermochemicalEquation(chemicalEquation: ChemicalEquation) {
+
+    def dH(deltaEnthalpyInKiloJoule: BigDecimal): ThermochemicalEquation = ThermochemicalEquation(chemicalEquation, deltaEnthalpyInKiloJoule)
   }
 
 }

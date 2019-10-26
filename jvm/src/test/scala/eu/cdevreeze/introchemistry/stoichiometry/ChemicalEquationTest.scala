@@ -308,4 +308,125 @@ class ChemicalEquationTest extends AnyFunSuite {
       reaction.show
     }
   }
+
+  test("testMultiplyChemicalEquation") {
+    val reactionAsString = "Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
+    val reaction = ChemicalEquation(reactionAsString)
+
+    assertResult(true) {
+      reaction.isBalanced
+    }
+
+    val reaction2 = reaction.multiplyCoefficients(5)
+
+    assertResult(true) {
+      reaction2.isBalanced
+    }
+
+    assertResult(reaction.reactants.map(fq => 5 * reaction.getReactantQuantity(fq.formula))) {
+      reaction2.reactants.map(fq => reaction2.getReactantQuantity(fq.formula))
+    }
+
+    assertResult(reaction.products.map(fq => 5 * reaction.getProductQuantity(fq.formula))) {
+      reaction2.products.map(fq => reaction2.getProductQuantity(fq.formula))
+    }
+
+    // Same if we take (absent) phase into account
+
+    assertResult(reaction.reactants.map(fq => 5 * reaction.getReactantQuantity(fq.formulaPhase))) {
+      reaction2.reactants.map(fq => reaction2.getReactantQuantity(fq.formulaPhase))
+    }
+
+    assertResult(reaction.products.map(fq => 5 * reaction.getProductQuantity(fq.formulaPhase))) {
+      reaction2.products.map(fq => reaction2.getProductQuantity(fq.formulaPhase))
+    }
+  }
+
+  test("testNormlizeChemicalEquation") {
+    val reactionAsString = "3 Ca5(PO4)3OH + 21 H3PO4 + 12 H2O + 3 O2 = O2 + 15 Ca(H2PO4)2H2O + 2 O2"
+    val reaction = ChemicalEquation(reactionAsString)
+
+    assertResult(true) {
+      reaction.isBalanced
+    }
+
+    assertResult(ChemicalEquation("3 Ca5(PO4)3OH + 21 H3PO4 + 12 H2O + 3 O2 = O2 + 15 Ca(H2PO4)2H2O + 2 O2")) {
+      reaction.withoutDuplicateReactants
+    }
+
+    assertResult(ChemicalEquation("3 Ca5(PO4)3OH + 21 H3PO4 + 12 H2O + 3 O2 = 3 O2 + 15 Ca(H2PO4)2H2O")) {
+      reaction.withoutDuplicateProducts
+    }
+
+    assertResult(ChemicalEquation("3 Ca5(PO4)3OH + 21 H3PO4 + 12 H2O = 15 Ca(H2PO4)2H2O")) {
+      reaction.withoutDuplicateFormulas
+    }
+
+    assertResult(ChemicalEquation("1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O")) {
+      reaction.withoutDuplicateFormulas.normalizeCoefficients
+    }
+
+    assertResult(ChemicalEquation("1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O")) {
+      reaction.normalize
+    }
+
+    assertResult(true) {
+      reaction.normalize.isBalanced
+    }
+  }
+
+  test("testSwapChemicalEquation") {
+    val reactionAsString = "1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O = 5 Ca(H2PO4)2H2O"
+    val reaction = ChemicalEquation(reactionAsString)
+
+    assertResult(true) {
+      reaction.isBalanced
+    }
+
+    assertResult(ChemicalEquation("5 Ca(H2PO4)2H2O = 1 Ca5(PO4)3OH + 7 H3PO4 + 4 H2O")) {
+      reaction.swapReactantsAndProducts
+    }
+
+    assertResult(reaction) {
+      reaction.swapReactantsAndProducts.swapReactantsAndProducts
+    }
+  }
+
+  test("testAddChemicalEquations") {
+    assertResult(ChemicalEquation("C2H4 (g) + 2 H2 (g) + O2 (g) = C2H5OH (l) + H2O (l)")) {
+      ChemicalEquation("C2H4 (g) + H2O (l) = C2H5OH (l)").add(ChemicalEquation("2 H2 (g) + O2 (g) = 2 H2O (l)"))
+    }
+
+    assertResult(ChemicalEquation("2 C2H4 (g) + 2 H2 (g) + O2 (g) = 2 C2H5OH (l)")) {
+      ChemicalEquation("C2H4 (g) + H2O (l) = C2H5OH (l)").multiplyCoefficients(2)
+        .add(ChemicalEquation("2 H2 (g) + O2 (g) = 2 H2O (l)"))
+    }
+
+    assertResult(ChemicalEquation("2 C2H4 + 2 H2 + O2 = 2 C2H5OH")) {
+      ChemicalEquation("C2H4 (g) + H2O (l) = C2H5OH (l)").multiplyCoefficients(2)
+        .addIgnoringPhase(ChemicalEquation("2 H2 (g) + O2 (g) = 2 H2O (l)"))
+    }
+  }
+
+  test("testCombineEquations") {
+    val reactions = List(
+      ChemicalEquation("C6H12O6 (s) + 6 O2 (g) = 6 CO2 (g) + 6 H2O (l)"),
+      ChemicalEquation("C2H4 (g) + H2O (l) = C2H5OH (l)"),
+      ChemicalEquation("2 C (s) + 2 H2 (g) = C2H4 (g)"),
+      ChemicalEquation("2 H2 (g) + O2 (g) = 2 H2O (l)"),
+      ChemicalEquation("C (s) + O2 (g) = CO2 (g)"),
+    )
+
+    assertResult(true) {
+      reactions.forall(_.isBalanced)
+    }
+
+    assertResult(ChemicalEquation("C6H12O6 (s) = 2 CO2 (g) + 2 C2H5OH (l)").ensuring(_.isBalanced)) {
+      reactions(0)
+        .add(reactions(1).multiplyCoefficients(2))
+        .add(reactions(2).multiplyCoefficients(2))
+        .add(reactions(3).swapReactantsAndProducts.multiplyCoefficients(2))
+        .add(reactions(4).swapReactantsAndProducts.multiplyCoefficients(4))
+    }
+  }
 }

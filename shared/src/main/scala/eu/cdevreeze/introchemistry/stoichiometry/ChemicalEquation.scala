@@ -17,6 +17,7 @@
 package eu.cdevreeze.introchemistry.stoichiometry
 
 import eu.cdevreeze.introchemistry.periodictable.ElementSymbol
+import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation.FormulaPhase
 
 /**
  * A chemical equation in stoichiometry. The reactants and products are formulas.
@@ -32,7 +33,9 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
   require(reactants.nonEmpty, s"At least one reactant must be given")
   require(products.nonEmpty, s"At least one product must be given")
 
-  def reactantsAndProducts: Seq[ChemicalEquation.FormulaQuantity] = reactants.appendedAll(products)
+  import ChemicalEquation.FormulaQuantity
+
+  def reactantsAndProducts: Seq[FormulaQuantity] = reactants.appendedAll(products)
 
   def usedElements: Set[ElementSymbol] = {
     reactantsAndProducts.map(_.formula).flatMap(_.atomCounts.keySet).toSet
@@ -54,12 +57,107 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
     leftHandCount == rightHandCount
   }
 
+  def withoutPhases: ChemicalEquation = {
+    new ChemicalEquation(reactants.map(_.withoutPhase), products.map(_.withoutPhase))
+  }
+
+  /**
+   * Returns the quantity of the reactant(s) with the given formula, and returns 0 if not found.
+   * The given formula must match the formula in the chemical equation to the letter, or else it is not found.
+   * The optional phases of the formulas are ignored.
+   */
+  def getReactantQuantity(formula: Formula): Int = {
+    reactants.filter(_.formula == formula).map(_.quantity).sum
+  }
+
+  /**
+   * Returns the quantity of the product(s) with the given formula, and returns 0 if not found.
+   * The given formula must match the formula in the chemical equation to the letter, or else it is not found.
+   * The optional phases of the formulas are ignored.
+   */
+  def getProductQuantity(formula: Formula): Int = {
+    products.filter(_.formula == formula).map(_.quantity).sum
+  }
+
+  /**
+   * Returns the quantity of the reactant(s) with the given formula phase, and returns 0 if not found.
+   * The given formula phase must match the formula phase in the chemical equation to the letter, or else it is not found.
+   */
+  def getReactantQuantity(formulaPhase: FormulaPhase): Int = {
+    reactants.filter(_.formulaPhase == formulaPhase).map(_.quantity).sum
+  }
+
+  /**
+   * Returns the quantity of the product(s) with the given formula phase, and returns 0 if not found.
+   * The given formula phase must match the formula phase in the chemical equation to the letter, or else it is not found.
+   */
+  def getProductQuantity(formulaPhase: FormulaPhase): Int = {
+    products.filter(_.formulaPhase == formulaPhase).map(_.quantity).sum
+  }
+
   def multiplyCoefficients(factor: Int): ChemicalEquation = {
     require(factor > 0, s"Expected factor > 0")
 
     ChemicalEquation(
-      reactants.map(fq => fq.copy(quantity = factor * fq.quantity)),
-      products.map(fq => fq.copy(quantity = factor * fq.quantity)))
+      reactants.map(_.mapQuantity(_ * factor)),
+      products.map(_.mapQuantity(_ * factor)))
+  }
+
+  def normalize: ChemicalEquation = {
+    this.withoutDuplicateFormulas.normalizeCoefficients
+  }
+
+  def normalizeCoefficients: ChemicalEquation = {
+    val gcdOpt = gcdOption(reactantsAndProducts.map(_.quantity))
+
+    gcdOpt.map(gcd => ChemicalEquation(reactants.map(_.mapQuantity(_ / gcd)), products.map(_.mapQuantity(_ / gcd)))).getOrElse(this)
+  }
+
+  def withoutDuplicateFormulas: ChemicalEquation = {
+    val startCe = this.withoutDuplicateReactants.withoutDuplicateProducts
+
+    val duplicateFormulaPhases: Set[FormulaPhase] =
+      startCe.reactants.map(_.formulaPhase).toSet.intersect(startCe.products.map(_.formulaPhase).toSet)
+
+    val newReactants: Seq[FormulaQuantity] = startCe.reactants.flatMap { fq =>
+      if (duplicateFormulaPhases.contains(fq.formulaPhase)) {
+        val otherQty = startCe.products.find(_.formulaPhase == fq.formulaPhase).map(_.quantity).getOrElse(0)
+
+        if (fq.quantity <= otherQty) None else Some(fq.mapQuantity(_ - otherQty))
+      } else {
+        Some(fq)
+      }
+    }
+
+    val newProducts: Seq[FormulaQuantity] = startCe.products.flatMap { fq =>
+      if (duplicateFormulaPhases.contains(fq.formulaPhase)) {
+        val otherQty = startCe.reactants.find(_.formulaPhase == fq.formulaPhase).map(_.quantity).getOrElse(0)
+
+        if (fq.quantity <= otherQty) None else Some(fq.mapQuantity(_ - otherQty))
+      } else {
+        Some(fq)
+      }
+    }
+
+    if (newReactants.isEmpty || newProducts.isEmpty) {
+      startCe
+    } else {
+      ChemicalEquation(newReactants, newProducts)
+    }
+  }
+
+  def withoutDuplicateReactants: ChemicalEquation = {
+    val formulaCounts: Map[FormulaPhase, Int] = reactants.groupBy(_.formulaPhase).view.mapValues(_.map(_.quantity).sum).toMap
+    val newReactants = reactants.distinctBy(_.formulaPhase).map(fq => fq.withQuantity(formulaCounts(fq.formulaPhase)))
+
+    ChemicalEquation(newReactants, products)
+  }
+
+  def withoutDuplicateProducts: ChemicalEquation = {
+    val formulaCounts: Map[FormulaPhase, Int] = products.groupBy(_.formulaPhase).view.mapValues(_.map(_.quantity).sum).toMap
+    val newProducts = products.distinctBy(_.formulaPhase).map(fq => fq.withQuantity(formulaCounts(fq.formulaPhase)))
+
+    ChemicalEquation(reactants, newProducts)
   }
 
   /**
@@ -71,14 +169,86 @@ final case class ChemicalEquation(reactants: Seq[ChemicalEquation.FormulaQuantit
 
     if (duplicates.isEmpty) this else ChemicalEquation(reactants.filterNot(duplicates), products.filterNot(duplicates))
   }
+
+  def swapReactantsAndProducts: ChemicalEquation = {
+    ChemicalEquation(reactants = this.products, products = this.reactants)
+  }
+
+  /**
+   * Adds the given chemical equation to this equation, after removing phases, so matching on formulas without phases.
+   * Adding means adding the reactants together as the reactants of the result equation, and doing the same for the products.
+   * If both equations are balanced, then so is the result.
+   */
+  def addIgnoringPhase(otherChemicalEquation: ChemicalEquation): ChemicalEquation = {
+    this.withoutPhases.add(otherChemicalEquation.withoutPhases)
+  }
+
+  /**
+   * Adds the given chemical equation to this equation, taking phases into account, so matching on formulas including the optional phases.
+   * Adding means adding the reactants together as the reactants of the result equation, and doing the same for the products.
+   * Duplicate formulas (with phases) are removed in the result, both within and across LHS and RHS of the equation, without
+   * changing the equation in any meaningful way.
+   *
+   * If both equations are balanced, then so is the result.
+   */
+  def add(otherChemicalEquation: ChemicalEquation): ChemicalEquation = {
+    ChemicalEquation(
+      plus(reactants, otherChemicalEquation.reactants),
+      plus(products, otherChemicalEquation.products)).withoutDuplicateFormulas
+  }
+
+  /**
+   * Adds the 2nd formula quantities to the first ones, after "de-duplication" of formulas.
+   * The result contains all formulas (with phases) of either collection (without duplicates), summing up all quantities of those formulas.
+   */
+  private def plus(
+    formulaQuantities: Seq[FormulaQuantity],
+    otherFormulaQuantities: Seq[FormulaQuantity]): Seq[FormulaQuantity] = {
+
+    val formulaPhases = formulaQuantities.appendedAll(otherFormulaQuantities).map(_.formulaPhase).distinct
+
+    formulaPhases.map { fp =>
+      val qty = formulaQuantities.filter(_.formulaPhase == fp).map(_.quantity).sum +
+        otherFormulaQuantities.filter(_.formulaPhase == fp).map(_.quantity).sum
+
+      FormulaQuantity(fp.formula, fp.phaseOption, qty)
+    }
+  }
+
+  private def gcdOption(xs: Seq[Int]): Option[Int] = {
+    if (xs.isEmpty) {
+      None
+    } else {
+      if (xs.sizeIs <= 2) {
+        if (xs.size == 1) Some(xs.head) else Some(gcd(xs(0), xs(1)))
+      } else {
+        gcdOption(xs.tail).map(n => gcd(xs.head, n)) // Recursive call
+      }
+    }
+  }
+
+  private def gcd(x: Int, y: Int): Int = {
+    if (y == 0) x else gcd(y, x % y) // Recursive call
+  }
 }
 
 object ChemicalEquation {
+
+  final case class FormulaPhase(formula: Formula, phaseOption: Option[Phase]) {
+
+    def withoutPhase: FormulaPhase = FormulaPhase(formula, None)
+  }
 
   final case class FormulaQuantity(formula: Formula, phaseOption: Option[Phase], quantity: Int) {
     require(quantity > 0, s"Quantity must be > 0")
 
     def withQuantity(newQuantity: Int): FormulaQuantity = this.copy(quantity = newQuantity)
+
+    def mapQuantity(f: Int => Int): FormulaQuantity = withQuantity(f(quantity))
+
+    def formulaPhase: FormulaPhase = FormulaPhase(formula, phaseOption)
+
+    def withoutPhase: FormulaQuantity = FormulaQuantity(formula, None, quantity)
   }
 
   def apply(s: String): ChemicalEquation = parse(s)
@@ -119,7 +289,7 @@ object ChemicalEquation {
 
   // Builder
 
-  final case class Builder(reactants: Seq[ChemicalEquation.FormulaQuantity], products: Seq[ChemicalEquation.FormulaQuantity]) {
+  final case class Builder(reactants: Seq[FormulaQuantity], products: Seq[FormulaQuantity]) {
 
     def build: ChemicalEquation = ChemicalEquation(reactants, products)
 
