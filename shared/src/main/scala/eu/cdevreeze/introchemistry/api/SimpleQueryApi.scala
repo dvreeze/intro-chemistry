@@ -21,13 +21,15 @@ import eu.cdevreeze.introchemistry.stoichiometry.ChemicalEquation
 import eu.cdevreeze.introchemistry.stoichiometry.Formula
 import eu.cdevreeze.introchemistry.stoichiometry.Phase
 import eu.cdevreeze.introchemistry.thermochemistry.ThermochemicalEquation
+import eu.cdevreeze.introchemistry.thermochemistry.ThermochemistrySupport
 
 /**
  * Simple chemistry query API, combining the different APIs into one "entry point".
  *
  * @author Chris de Vreeze
  */
-final class SimpleQueryApi(val periodicTable: PeriodicTable) extends SimpleStoichiometryQueryApi with SimpleOrbitalsQueryApi
+final class SimpleQueryApi(val periodicTable: PeriodicTable)
+  extends SimpleStoichiometryQueryApi with SimpleOrbitalsQueryApi with SimpleThermochemistryQueryApi
 
 object SimpleQueryApi {
 
@@ -84,5 +86,24 @@ object SimpleQueryApi {
 
     def dH(deltaEnthalpyInKiloJoule: BigDecimal): ThermochemicalEquation = ThermochemicalEquation(chemicalEquation, deltaEnthalpyInKiloJoule)
   }
+
+  val LiterInCubicMeter: BigDecimal = ThermochemistrySupport.LiterInCubicMeter
+
+  val AtmosphereInPascal: BigDecimal = ThermochemistrySupport.AtmosphereInPascal
+
+  val LiterAtmInJoule: BigDecimal = ThermochemistrySupport.LiterAtmInJoule
+
+  /**
+   * Small calorie in Joule. Note that a cal (small calorie) is the energy needed to increase the temperature of 1 g of water
+   * by 1 Kelvin at a pressure of 1 atm. As an aside, note that a large calorie (Cal or kcal), or food calorie, is the same for 1 kg instead of g.
+   */
+  val SmallCalorieInJoule: BigDecimal = ThermochemistrySupport.SmallCalorieInJoule
+
+  val LargeCalorieInJoule: BigDecimal = ThermochemistrySupport.LargeCalorieInJoule
+
+  /**
+   * The ideal gas constant, in J / (K * mol).
+   */
+  val IdealGasConstantInJoulePerKelvinMole: BigDecimal = ThermochemistrySupport.IdealGasConstantInJoulePerKelvinMole
 
 }
